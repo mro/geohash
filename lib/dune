@@ -1,0 +1,16 @@
+(library
+  (name Lib)
+  (libraries
+    tyre
+  )
+)
+
+;(rule
+;   (target version.ml)
+;   (action
+;    (with-stdout-to %{target}
+;    (echo "let git_sha = \"foo")
+;     (run git rev-parse --short HEAD)
+;    (echo "bar\"")
+;   ))
+;  )

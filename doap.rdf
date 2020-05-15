@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="doap2html.xslt"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns="http://usefulinc.com/ns/doap#">
+  <Project>
+    <name>geohash</name>
+    <shortdesc xml:lang="en">🐫 geohash conversion tool. Commandline and cgi. Zero-config, single-file CGI.</shortdesc>
+    <description xml:lang="en"></description>
+    <homepage rdf:resource="http://purl.mro.name/geohash"/>
+    <bug-database rdf:resource="https://code.mro.name/mro/geohash/issues"/>
+    <service-endpoint rdf:resource="v1"/>
+    <implements rdf:resource="v1/openapi.yaml"/>
+    <programming-language>OCaml</programming-language>
+    <category rdf:resource="https://projects.apache.org/category/http" />
+    <license rdf:resource="LICENSE"/>
+    <license rdf:resource="https://spdx.org/licenses/GPL-3.0-only"/>
+    <maintainer rdf:resource="https://code.mro.name/mro"/>
+    <wiki rdf:resource="https://code.mro.name/mro/geohash/wiki"/>
+    <readme xml:lang="en" rdf:resource="README.md" />
+<!--
+    <repository>
+      <GitRepository>
+        <browse rdf:resource="https://github.com/mro/geohash"/>
+      </GitRepository>
+    </repository>
+    <repository>
+      <GitRepository>
+        <browse rdf:resource="https://codeberg.org/mro/geohash"/>
+      </GitRepository>
+    </repository>
+    <repository>
+      <GitRepository>
+        <browse rdf:resource="https://repo.or.cz/geohash.git"/>
+      </GitRepository>
+    </repository>
+    <repository>
+      <GitRepository>
+        <browse rdf:resource="https://gitlab.com/mro/geohash"/>
+      </GitRepository>
+    </repository>
+-->
+    <repository>
+      <GitRepository>
+        <browse rdf:resource="https://code.mro.name/mro/geohash"/>
+        <location rdf:resource="https://code.mro.name/mro/geohash.git"/>
+      </GitRepository>
+    </repository>
+ </Project>
+</rdf:RDF>

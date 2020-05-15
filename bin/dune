@@ -1,0 +1,34 @@
+; https://stackoverflow.com/a/53325230/349514
+(executable
+  (name geohash)
+  (libraries Lib)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Prepare for static linking
+;
+; http://rgrinberg.com/posts/static-binaries-tutorial/
+; https://discuss.ocaml.org/t/statically-link/1464/9
+; Issue https://discuss.ocaml.org/t/statically-link/1464/13
+; https://www.systutorials.com/how-to-statically-link-ocaml-programs/
+;
+; $ date
+; Tue Mar 24 11:36:40 CET 2020
+; $ uname -o -m
+; x86_64 GNU/Linux
+; $ cat /etc/issue
+; Devuan GNU/Linux 1 \n \l
+;
+; # on Ubuntu Bionic note
+; # https://github.com/ocaml/ocaml/issues/9131#issuecomment-599765888
+; $ sudo add-apt-repository ppa:avsm/musl
+;
+; $ sudo apt-get install musl-tools
+; $ eval (opam env)
+; $ opam switch create 4.10.0+musl+static+flambda
+; $ opam switch 4.10.0+musl+static+flambda
+; $ eval (opam env)
+; $ opam install dune
+; $ make clean build
+; $ file _build/default/bin/*.exe 
+; _build/default/bin/meta.exe: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, not stripped
+;  (link_flags (-ccopt "-static"))
+)

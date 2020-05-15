@@ -1,0 +1,6 @@
+; http://cumulus.github.io/Syndic/syndic/Syndic__/Syndic_atom/
+(tests
+ (names
+   geohash_test
+ )
+ (libraries Lib))
