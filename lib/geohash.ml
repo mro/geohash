@@ -1,49 +1,60 @@
 
 module P = struct
-  let b32_int_of_char = function
-    | '0' -> 0x00 | '1' -> 0x01 | '2' -> 0x02 | '3' -> 0x03 | '4' -> 0x04
-    | '5' -> 0x05 | '6' -> 0x06 | '7' -> 0x07 | '8' -> 0x08 | '9' -> 0x09
-    | 'b' -> 0x0a | 'c' -> 0x0b | 'd' -> 0x0c | 'e' -> 0x0d | 'f' -> 0x0e
-    | 'g' -> 0x0f | 'h' -> 0x10 | 'j' -> 0x11 | 'k' -> 0x12 | 'm' -> 0x13
-    | 'n' -> 0x14 | 'p' -> 0x15 | 'q' -> 0x16 | 'r' -> 0x17 | 's' -> 0x18
-    | 't' -> 0x19 | 'u' -> 0x1a | 'v' -> 0x1b | 'w' -> 0x1c | 'x' -> 0x1d
-    | 'y' -> 0x1e | 'z' -> 0x1f
-    | _   -> 0
+  let world = ((-180.,180.),(-90.,90.))
+
+  let mid = function
+    (mi,ma) -> (mi +. ma) /. 2.
+
+  (* may change to halfspan *)
+  let span = function
+    (mi,ma) -> ma -. mi
 
   let is_bit_set idx bits =
     0 != bits land (1 lsl idx)
 
-  let rec decode_5bits tmp idx max off bits =
-    if idx >= max
-    then tmp
+  let b32_int_of_char = function
+    | '0' -> Ok 0x00 | '1' -> Ok 0x01 | '2' -> Ok 0x02 | '3' -> Ok 0x03 | '4' -> Ok 0x04
+    | '5' -> Ok 0x05 | '6' -> Ok 0x06 | '7' -> Ok 0x07 | '8' -> Ok 0x08 | '9' -> Ok 0x09
+    | 'b' -> Ok 0x0a | 'c' -> Ok 0x0b | 'd' -> Ok 0x0c | 'e' -> Ok 0x0d | 'f' -> Ok 0x0e
+    | 'g' -> Ok 0x0f | 'h' -> Ok 0x10 | 'j' -> Ok 0x11 | 'k' -> Ok 0x12 | 'm' -> Ok 0x13
+    | 'n' -> Ok 0x14 | 'p' -> Ok 0x15 | 'q' -> Ok 0x16 | 'r' -> Ok 0x17 | 's' -> Ok 0x18
+    | 't' -> Ok 0x19 | 'u' -> Ok 0x1a | 'v' -> Ok 0x1b | 'w' -> Ok 0x1c | 'x' -> Ok 0x1d
+    | 'y' -> Ok 0x1e | 'z' -> Ok 0x1f
+    | ch  -> Error ch
+
+  let rec decode_bits bits idx lonoff area =
+    if idx < 0
+    then area
     else
-      let choose hi minmax =
-        let (a,b) = minmax in
-        let m = (a +. b) /. 2. in
+      let hi = is_bit_set idx bits in
+      let choose = fun minmax ->
+        let m = mid minmax
+        and (a,b) = minmax in
         if hi
         then (m,b)
         else (a,m)
       in
-      let hi = bits |> is_bit_set (4 - idx) in
-      let islon = off = (idx mod 2) in
-      let (lon,lat) = tmp in
-      let tmp' = if islon
-        then (lon |> choose hi, lat)
-        else (lon             , lat |> choose hi)
-      in decode_5bits tmp' (idx + 1) max off bits
+      let (lon,lat) = area in
+      begin if lonoff = (idx mod 2)
+        then (lon |> choose, lat)
+        else (lon          , lat |> choose)
+      end |> decode_bits bits (idx - 1) lonoff
 
-  let rec decode_str str idx max tmp =
+  let rec decode_chars hash idx max area =
     if idx >= max
-    then tmp
-    else idx
-      |> String.get str
-      |> b32_int_of_char
-      |> decode_5bits tmp 0 5 (idx mod 2)
-      |> decode_str str (idx + 1) max
+    then area
+    else match area with
+    | Error e  -> Error e
+    | Ok area' -> match idx
+        |> String.get hash
+        |> b32_int_of_char with
+      | Error e -> Error e
+      | Ok bits -> (Ok (decode_bits bits 4 (idx mod 2) area'))
+        |> decode_chars hash (idx + 1) max
  end
 
-let decode str =
-  let tmp = P.decode_str str 0 (String.length str) ((-180.,180.),(-90.,90.)) in
-  let ((lo0,lo1),(la0,la1)) = tmp in
-  (((la0 +. la1) /. 2., (lo0 +. lo1) /. 2.) , (la1 -. la0, lo1 -. lo0))
+let decode hash =
+  match P.decode_chars hash 0 (String.length hash) (Ok P.world) with
+  | Ok (lon,lat) -> Ok ((P.mid lat, P.mid lon),(P.span lat, P.span lon))
+  | other -> other
 
