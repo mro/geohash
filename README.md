@@ -3,8 +3,10 @@
 
 A converter for web and commandline.
 
-https://en.wikipedia.org/wiki/Geohash  
-https://tools.ietf.org/html/rfc5870
+* https://en.wikipedia.org/wiki/Geohash
+* https://tools.ietf.org/html/rfc5870
+* https://github.com/francoisroyer/ocaml-geohash
+* https://github.com/mariusae/ocaml-geohash
 
 ## Design Goals
 

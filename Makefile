@@ -17,6 +17,9 @@ $(dst): _build/default/bin/geohash.exe
 	strip $@
 	ls -l $@
 
+test/assert.ml:
+	curl --location --output $@ https://raw.githubusercontent.com/benjenkinsv95/ocaml-unit-testing-helpers/master/assert.ml
+
 #
 # https://github.com/ocaml/dune/tree/master/example/sample-projects/hello_world
 # via https://stackoverflow.com/a/54712669
@@ -30,7 +33,7 @@ build: lib/res.ml
 
 all: build
 
-test:
+test: test/assert.ml
 	dune runtest
 
 examples:
