@@ -22,6 +22,45 @@ module P = struct
     | 'y' -> Ok 0x1e | 'z' -> Ok 0x1f
     | ch  -> Error ch
 
+  let b32_int_to_char = function
+    | 0x00 -> "0" | 0x01 -> "1" | 0x02 -> "2" | 0x03 -> "3" | 0x04 -> "4"
+    | 0x05 -> "5" | 0x06 -> "6" | 0x07 -> "7" | 0x08 -> "8" | 0x09 -> "9"
+    | 0x0a -> "b" | 0x0b -> "c" | 0x0c -> "d" | 0x0d -> "e" | 0x0e -> "f"
+    | 0x0f -> "g" | 0x10 -> "h" | 0x11 -> "j" | 0x12 -> "k" | 0x13 -> "m"
+    | 0x14 -> "n" | 0x15 -> "p" | 0x16 -> "q" | 0x17 -> "r" | 0x18 -> "s"
+    | 0x19 -> "t" | 0x1a -> "u" | 0x1b -> "v" | 0x1c -> "w" | 0x1d -> "x"
+    | 0x1e -> "y" | 0x1f -> "z"
+    | _    -> "-"
+
+  let rec encode_wrk pt charsleft step area bits ret =
+    if charsleft <= 0
+    then ret
+    else
+      let (lon,lat) = area in
+      let mlo = mid lon
+      and mla = mid lat
+      (* let dlo = span lon
+      and dla = span lat in
+      Printf.printf "encode_wrk pt:%f,%f %d %d mid:%f,%f span:%f,%f\n" la lo charsleft step mla mlo dla dlo; *)
+      and sm2z = 0 = (step mod 2)
+      and (lo,la) = pt in
+      let hi = if sm2z
+        then lo >= mlo
+        else la >= mla in
+      let ((lo0,lo1),(la0,la1)) = area in
+      let area' = match (sm2z,hi) with
+      | (true, true)  -> ((mlo,lo1),(la0,la1))
+      | (true, false) -> ((lo0,mlo),(la0,la1))
+      | (false,true)  -> ((lo0,lo1),(mla,la1))
+      | (false,false) -> ((lo0,lo1),(la0,mla))
+      and sm5 = step mod 5 in
+      let bits' = bits lor if hi then 1 lsl (4 - sm5) else 0 in
+      if 4 = sm5
+      then
+        encode_wrk pt (charsleft - 1) (step + 1) area' 0 (ret |> List.cons bits')
+      else
+        encode_wrk pt charsleft (step + 1) area' bits' ret
+
   let rec decode_bits bits idx lonoff area =
     if idx < 0
     then area
@@ -51,7 +90,17 @@ module P = struct
       | Error e -> Error e
       | Ok bits -> (Ok (decode_bits bits 4 (idx mod 2) area'))
         |> decode_chars hash (idx + 1) max
- end
+end
+
+let encode chars coord =
+  let area = P.world
+  and (lat,lon) = coord in
+  (* check coord inclusion? *)
+  let ret = P.encode_wrk (lon,lat) chars 0 area 0 []
+    |> List.rev
+    |> List.map P.b32_int_to_char
+    |> String.concat ""
+  in Ok ret
 
 let decode hash =
   match P.decode_chars hash 0 (String.length hash) (Ok P.world) with

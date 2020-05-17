@@ -3,6 +3,13 @@ open Lib
 
 let () = assert (1 + 1 = 2)
 
+let test_encode_sunshine () =
+  (* https://github.com/francoisroyer/ocaml-geohash/blob/master/geohash.ml#L200 *)
+  begin match Geohash.encode 11 (57.649111,10.407440) with
+  | Error _ -> assert false
+  | Ok hash -> Assert2.equals_string "hash" "u4pruydqqvj" hash
+  end
+
 let test_decode_sunshine () =
   (* https://github.com/francoisroyer/ocaml-geohash/blob/master/geohash.ml#L200 *)
   begin match Geohash.decode "u4pruydqqvj" with
@@ -33,6 +40,7 @@ let test_decode_failure () =
 (* test string to int64 + prec *)
 
 let () =
+  test_encode_sunshine ();
   test_decode_sunshine ();
   test_decode_failure ()
 
