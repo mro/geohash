@@ -1,3 +1,22 @@
+(*
+ * geohash.ml
+ *
+ * Created by Marcus Rohrmoser on 16.05.20.
+ * Copyright © 2020-2020 Marcus Rohrmoser mobile Software http://mro.name/me. All rights reserved.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *)
 
 module P = struct
   let world = ((-180.,180.),(-90.,90.))
@@ -32,6 +51,8 @@ module P = struct
     | 0x1e -> "y" | 0x1f -> "z"
     | _    -> "-"
 
+  (* Recurse per bit, encode either lon (even) or lat (odd)
+   * and add chunks of 5 bits to a list to be returned finally. *)
   let rec encode_wrk pt charsleft step area bits ret =
     if charsleft <= 0
     then ret
@@ -42,9 +63,9 @@ module P = struct
       (* let dlo = span lon
       and dla = span lat in
       Printf.printf "encode_wrk pt:%f,%f %d %d mid:%f,%f span:%f,%f\n" la lo charsleft step mla mlo dla dlo; *)
-      and sm2z = 0 = (step mod 2)
+      and sm2z = 0 = (step mod 2) (* longitude *)
       and (lo,la) = pt in
-      let hi = if sm2z
+      let hi = if sm2z (* set the bit? *)
         then lo >= mlo
         else la >= mla in
       let ((lo0,lo1),(la0,la1)) = area in
@@ -56,11 +77,10 @@ module P = struct
       and sm5 = step mod 5 in
       let bits' = bits lor if hi then 1 lsl (4 - sm5) else 0 in
       if 4 = sm5
-      then
-        encode_wrk pt (charsleft - 1) (step + 1) area' 0 (ret |> List.cons bits')
-      else
-        encode_wrk pt charsleft (step + 1) area' bits' ret
+      then encode_wrk pt (charsleft - 1) (step + 1) area' 0    (ret |> List.cons bits')
+      else encode_wrk pt  charsleft      (step + 1) area' bits' ret
 
+  (* Decode a chunk of 5 bits and refine the area. *)
   let rec decode_bits bits idx lonoff area =
     if idx < 0
     then area
@@ -79,6 +99,7 @@ module P = struct
         else (lon          , lat |> choose)
       end |> decode_bits bits (idx - 1) lonoff
 
+  (* Decode one character of a geohash and refine the area. *)
   let rec decode_chars hash idx max area =
     if idx >= max
     then area

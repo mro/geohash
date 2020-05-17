@@ -17,7 +17,11 @@
     <maintainer rdf:resource="https://code.mro.name/mro"/>
     <wiki rdf:resource="https://code.mro.name/mro/geohash/wiki"/>
     <readme xml:lang="en" rdf:resource="README.md" />
-<!--
+    <repository>
+      <GitRepository>
+        <browse rdf:resource="https://notabug.org/mro/geohash"/>
+      </GitRepository>
+    </repository>
     <repository>
       <GitRepository>
         <browse rdf:resource="https://github.com/mro/geohash"/>
@@ -28,17 +32,18 @@
         <browse rdf:resource="https://codeberg.org/mro/geohash"/>
       </GitRepository>
     </repository>
+<!--
     <repository>
       <GitRepository>
         <browse rdf:resource="https://repo.or.cz/geohash.git"/>
       </GitRepository>
     </repository>
+-->
     <repository>
       <GitRepository>
         <browse rdf:resource="https://gitlab.com/mro/geohash"/>
       </GitRepository>
     </repository>
--->
     <repository>
       <GitRepository>
         <browse rdf:resource="https://code.mro.name/mro/geohash"/>

@@ -7,6 +7,7 @@ A converter for web and commandline.
 * https://tools.ietf.org/html/rfc5870
 * https://github.com/francoisroyer/ocaml-geohash
 * https://github.com/mariusae/ocaml-geohash
+* https://github.com/gansidui/geohash/blob/master/geohash.go#L50
 
 ## Design Goals
 
