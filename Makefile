@@ -6,7 +6,7 @@ dst := _build/geohash-$(os)-$(cpu)-$(ver).cgi
 
 final: build $(dst)
 
-lib/res.ml:	res res/doap.rdf res/doap2html.xslt res/v1/openapi.yaml
+lib/res.ml:	res res/doap.rdf res/doap2html.xslt
 	find res -name .DS_Store -delete
 	# opam install ocp-ocamlres
 	ocp-ocamlres -format ocaml $< -o $@

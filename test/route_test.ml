@@ -1,5 +1,5 @@
 (*
- * geohash.ml
+ * route_test.ml
  *
  * Created by Marcus Rohrmoser on 16.05.20.
  * Copyright © 2020-2020 Marcus Rohrmoser mobile Software http://mro.name/me. All rights reserved.
@@ -18,8 +18,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-let () =
-  ( match Lib.Cgi.request_from_env () with
-  | Ok req -> Cgi.handle req
-  | Error _ -> Sys.argv |> Array.to_list |> Shell.exec )
-  |> exit
+open Lib.Route
+
+let test_qs () =
+  assert (
+    match coord_from_qs "q=1.2,3.4" with Ok (1.2, 3.4) -> true | _ -> false );
+  match coord_from_qs "q=1.u2 , ; 3.4" with
+  | Error (`NoMatch (_, original)) -> assert (original != "")
+  | _ -> assert false
+
+let () = test_qs ()

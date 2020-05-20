@@ -18,133 +18,59 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-let camel = "🐫"
+let globe = "🌐"
 
 open Lib
 open Lib.Cgi
 
-let w s =
-  print_string s;
-  print_string "\n"
+let handle_query_string qs =
+  match Route.coord_from_qs qs with
+  | Error _ -> error 406 "Cannot parse query string."
+  | Ok coord -> (
+      let prec = 10 in
+      match Lib.Geohash.encode prec coord with
+      | Ok hash -> [ hash; "gpx" ] |> String.concat "/" |> redirect
+      | _ -> error 406 "Cannot encode coords." )
 
-let va n =
-  print_string "<li>";
-  print_string n;
-  print_string ": ";
-  let v = Cgi.getenv_safe ~default:"-" n in
-  (* TODO: escape *)
-  print_string v;
-  print_string "</li>";
-  print_string "\n"
-
-let dump_headers_all () =
-  w "HTTP/1.1 200 Ok";
-  w "Content-type: text/html; charset=utf-8";
-  w "";
-  w
-    "<html>\n\
-     <head><title>Hello, Worλd</title></head>\n\
-     <body>\n\
-     <h1>OCaml, where art thou 🐫!</h1>\n\
-     <p>";
-  let cwd = Sys.getcwd () in
-  w cwd;
-  w "</p>\n<ul>";
-  va "HOME";
-  va "HTTPS";
-  va "HTTP_HOST";
-  va "HTTP_COOKIE";
-  va "HTTP_ACCEPT";
-  va "REMOTE_ADDR";
-  va "REMOTE_USER";
-  va "REQUEST_METHOD";
-  va "REQUEST_URI";
-  va "PATH_INFO";
-  va "QUERY_STRING";
-  va "SERVER_NAME";
-  va "SERVER_PORT";
-  va "SERVER_SOFTWARE";
-  w "</ul>\n</body>\n</html>";
-  0
-
-let print_request req' =
-  let req : Cgi.req_raw = req' in
-  let cwd = Sys.getcwd () in
-  Printf.printf "HTTP/1.1 %d %s\n" 202 "Accepted";
-  w "Content-type: text/html; charset=utf-8";
-  w "";
-  w
-    "<html>\n\
-     <head><title>Hello, Worλd</title></head>\n\
-     <body>\n\
-     <h1>OCaml, where art thou 🐫!</h1>\n\
-     <p>";
-  w cwd;
-  w "</p>\n<ul>";
-  Printf.printf "<li>%s: %s</li>\n" "HTTPS" req.scheme;
-  Printf.printf "<li>%s: %s</li>\n" "HTTP_COOKIE" req.http_cookie;
-  Printf.printf "<li>%s: %s</li>\n" "HTTP_HOST" req.host;
-  Printf.printf "<li>%s: %s</li>\n" "PATH_INFO" req.path_info;
-  Printf.printf "<li>%s: %s</li>\n" "QUERY_STRING" req.query_string;
-  Printf.printf "<li>%s: %s</li>\n" "REQUEST_METHOD" req.request_method;
-  Printf.printf "<li>%s: %s</li>\n" "REQUEST_URI" req.request_uri;
-  Printf.printf "<li>%s: %s</li>\n" "SERVER_PORT" req.server_port;
-  let parts = String.split_on_char '?' req.request_uri in
-  let endp =
-    [
-      req.scheme;
-      "://";
-      req.host;
-      ":";
-      req.server_port;
-      List.hd parts;
-      "/../../../../";
-      "index.php";
-    ]
-    |> String.concat ""
-  in
-  (* we need the authentication info either from the query string (auth_token) or preauthenticated basic auth. *)
-  Printf.printf "<li>shaarli: %s</li>\n" endp;
-  w "</ul>\n</body>\n</html>";
-  0
-
-(* put into Lib.Cgi module? *)
-let redirect url =
-  Printf.printf "HTTP/1.1 %d %s\n" 302 "Found";
-  Printf.printf "Location: %s\n" url;
-  Printf.printf "\n";
-  0
-
-(* put into Lib.Cgi module? *)
-let error status reason =
-  Printf.printf "HTTP/1.1 %d %s\n" status reason;
-  Printf.printf "Content-type: text/plain; charset=utf-8\n";
-  Printf.printf "\n";
-  Printf.printf "%s %s.\n" camel reason;
-  0
-
-let dump_clob mime clob =
-  Printf.printf "Content-type: %s\n" mime;
-  Printf.printf "\n";
-  Printf.printf "%s" clob;
-  0
+let handle_hash req =
+  let pa = req.path_info |> String.split_on_char '/' in
+  match pa with
+  | [ ""; hash; "gpx" ] -> (
+      match Lib.Geohash.decode hash with
+      | Error _ -> error 406 "Cannot decode hash."
+      | Ok ((lat, lon), _) ->
+          let mime = "text/xml"
+          and base = "https://geohash.mro.name/geohash.cgi"
+          and zoom = 12 in
+          Printf.printf "Content-type: %s\n" mime;
+          Printf.printf "\n";
+          Printf.printf
+            "<?xml version='1.0'?>\n\
+             <?xml-stylesheet type='text/xsl' href='../gpx2html.xslt'?>\n\
+             <gpx xmlns='http://www.topografix.com/GPX/1/1' version='1.1' \
+             creator='http://purl.mro.name/geohash'>\n\
+            \  <wpt lat='%f' lon='%f'>\n\
+            \    <name>#%s</name>\n\
+            \    <link>%s/%s/%s</link>\n\
+            \    <cmt>zoom:%d</cmt>\n\
+            \  </wpt>\n\
+             </gpx>"
+            lat lon hash base hash "gpx" zoom;
+          0 )
+  | _ -> error 404 "Not found"
 
 let handle req =
   if "GET" <> req.request_method then error 405 "Method Not Allowed"
   else
     match req.path_info with
-    | "/dump" -> dump_headers_all ()
-    | "" -> [ req.request_uri; "/"; "about" ] |> String.concat "" |> redirect
-    | "/" -> [ req.request_uri; "about" ] |> String.concat "" |> redirect
-    | "/about" -> dump_clob "text/xml" Lib.Res.doap_rdf
-    | "/doap2html.xslt" -> dump_clob "text/xml" Lib.Res.doap2html_xslt
-    | "/LICENSE" -> dump_clob "text/plain; charset=utf-8" Lib.Res._LICENSE
-    | "/README.md" -> dump_clob "text/plain; charset=utf-8" Lib.Res._README_md
-    | "/v1" -> "about" |> redirect
-    | "/v1/openapi.yaml" ->
-        dump_clob "application/vnd.oai.openapi;version=3.0.1"
-          Lib.Res.V1.openapi_yaml
-    | "/v1/user/api_token" -> error 501 "Not Implemented"
-    | "/v1/posts/add" -> error 501 "Not Implemented"
-    | "/v1/posts/get" -> print_request req
-    | _ -> error 404 "Not Found"
+    | "/about" -> dump_clob "text/xml" Res.doap_rdf
+    | "/LICENSE" -> dump_clob "text/plain" Res._LICENSE
+    | "/doap2html.xslt" -> dump_clob "text/xml" Res.doap2html_xslt
+    | "/gpx2html.xslt" -> dump_clob "text/xml" Res.gpx2html_xslt
+    | "" -> [ req.request_uri; "/" ] |> String.concat "" |> redirect
+    | "/" ->
+        if "" = req.query_string then
+          [ req.request_uri; "u154c"; "/"; "gpx" ]
+          |> String.concat "" |> redirect
+        else handle_query_string req.query_string
+    | _ -> handle_hash req

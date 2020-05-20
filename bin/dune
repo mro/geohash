@@ -30,5 +30,5 @@
 ; $ make clean build
 ; $ file _build/default/bin/*.exe 
 ; _build/default/bin/meta.exe: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, not stripped
-;  (link_flags (-ccopt "-static"))
+  (link_flags (-ccopt "-static"))
 )

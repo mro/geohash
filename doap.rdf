@@ -3,20 +3,19 @@
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns="http://usefulinc.com/ns/doap#">
   <Project>
-    <name>geohash</name>
-    <shortdesc xml:lang="en">🐫 geohash conversion tool. Commandline and cgi. Zero-config, single-file CGI.</shortdesc>
+    <name>#🌐 geohash</name>
+    <shortdesc xml:lang="en">#🌐 geohash converter 🐫. Commandline and CGI. Zero-config, single-file.</shortdesc>
     <description xml:lang="en"></description>
     <homepage rdf:resource="http://purl.mro.name/geohash"/>
     <bug-database rdf:resource="https://code.mro.name/mro/geohash/issues"/>
-    <service-endpoint rdf:resource="v1"/>
-    <implements rdf:resource="v1/openapi.yaml"/>
+    <service-endpoint rdf:resource="."/>
     <programming-language>OCaml</programming-language>
     <category rdf:resource="https://projects.apache.org/category/http" />
+    <category rdf:resource="https://projects.apache.org/category/geo" />
     <license rdf:resource="LICENSE"/>
     <license rdf:resource="https://spdx.org/licenses/GPL-3.0-only"/>
     <maintainer rdf:resource="https://code.mro.name/mro"/>
     <wiki rdf:resource="https://code.mro.name/mro/geohash/wiki"/>
-    <readme xml:lang="en" rdf:resource="README.md" />
     <repository>
       <GitRepository>
         <browse rdf:resource="https://notabug.org/mro/geohash"/>
