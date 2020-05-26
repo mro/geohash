@@ -21,13 +21,14 @@
 let camel = "🐫"
 
 let redirect url =
-  Printf.printf "HTTP/1.1 %d %s\n" 302 "Found";
+  let status = 302 and reason = "Found" in
+  Printf.printf "Status: %d %s\n" status reason;
   Printf.printf "Location: %s\n" url;
   Printf.printf "\n";
   0
 
 let error status reason =
-  Printf.printf "HTTP/1.1 %d %s\n" status reason;
+  Printf.printf "Status: %d %s\n" status reason;
   Printf.printf "Content-type: text/plain; charset=utf-8\n";
   Printf.printf "\n";
   Printf.printf "%s %s.\n" camel reason;
@@ -72,7 +73,10 @@ let request_from_env () =
         query_string = getenv_safe ~default:"" "QUERY_STRING";
         request_method = Sys.getenv "REQUEST_METHOD";
         request_uri = Sys.getenv "REQUEST_URI";
-        scheme = (match Sys.getenv "HTTPS" with "on" -> "https" | _ -> "http");
+        scheme =
+          ( match getenv_safe ~default:"" "HTTPS" with
+          | "on" -> "https"
+          | _ -> "http" );
         server_port = Sys.getenv "SERVER_PORT";
       }
     in
