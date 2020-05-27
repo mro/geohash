@@ -13,7 +13,8 @@ module P = struct
 
   let q_lat_lon =
     let to_ (lat, lon) = (lat, lon) and of_ (lat, lon) = (lat, lon) in
-    conv to_ of_ (str "q=" *> float <&> pcre "([,; +]|%2C|%3B|%20)+" *> float <* stop)
+    conv to_ of_
+      (str "q=" *> float <&> pcre "([,; +]|%2C|%3B|%20)+" *> float <* stop)
 
   let q_lat_lon' = compile q_lat_lon
 end

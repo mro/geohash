@@ -20,65 +20,91 @@
 
 let camel = "🐫"
 
+module Os = struct
+  let getenv s = Sys.getenv s
+
+  (* https://github.com/rixed/ocaml-cgi/blob/master/cgi.ml#L169 *)
+  let getenv_safe ?default s =
+    try getenv s
+    with Not_found -> (
+      match default with
+      | Some d -> d
+      | None -> failwith ("Cgi: the environment variable " ^ s ^ " is not set") )
+end
+
 let redirect url =
-  let status = 302 and reason = "Found" in
-  Printf.printf "Status: %d %s\n" status reason;
-  Printf.printf "Location: %s\n" url;
+  let status = 302
+  and reason = "Found"
+  and mime = "text/plain; charset=utf-8" in
+  Printf.printf "%s: %d %s\n" "Status" status reason;
+  Printf.printf "%s: %s\n" "Content-Type" mime;
+  Printf.printf "%s: %s\n" "Location" url;
   Printf.printf "\n";
+  Printf.printf "%s %s.\n" camel reason;
   0
 
 let error status reason =
-  Printf.printf "Status: %d %s\n" status reason;
-  Printf.printf "Content-type: text/plain; charset=utf-8\n";
+  let mime = "text/plain; charset=utf-8" in
+  Printf.printf "%s: %d %s\n" "Status" status reason;
+  Printf.printf "%s: %s\n" "Content-Type" mime;
   Printf.printf "\n";
   Printf.printf "%s %s.\n" camel reason;
   0
 
 let dump_clob mime clob =
-  Printf.printf "Content-type: %s\n" mime;
+  Printf.printf "%s: %s\n" "Content-Type" mime;
   Printf.printf "\n";
   Printf.printf "%s" clob;
   0
 
 type req_raw = {
-  scheme : string;
-  http_cookie : string;
   host : string;
+  http_cookie : string;
   path_info : string;
+  query_string : string;
   request_method : string;
   request_uri : string;
-  query_string : string;
+  scheme : string;
+  script_name : string;
   server_port : string;
 }
 
 (* https://tools.ietf.org/html/rfc7231#section-6 *)
+let consolidate req =
+  Ok
+    {
+      req with
+      path_info =
+        (* despite https://tools.ietf.org/html/rfc7231#section-6 1and1.de
+         * webshosting Apache returns the script_name instead an empty (nonex)
+         * path_info in case *)
+        ( match req.path_info = req.script_name with
+        | true -> ""
+        | false -> req.path_info );
+    }
 
-(* https://github.com/rixed/ocaml-cgi/blob/master/cgi.ml#L169 *)
-let getenv_safe ?default s =
-  try Sys.getenv s
-  with Not_found -> (
-    match default with
-    | Some d -> d
-    | None -> failwith ("Cgi: the environment variable " ^ s ^ " is not set") )
-
-(* very basic, minimal parsing only *)
+(* very basic, minimal parsing only.
+ *
+ * https://tools.ietf.org/html/rfc3875#section-4.1.13
+ *)
 let request_from_env () =
   try
-    let name = Sys.getenv "SERVER_NAME" in
+    let name = Os.getenv "SERVER_NAME" in
     let ret =
       {
-        http_cookie = getenv_safe ~default:"" "HTTP_COOKIE";
-        host = getenv_safe ~default:name "HTTP_HOST";
-        path_info = getenv_safe ~default:"" "PATH_INFO";
-        query_string = getenv_safe ~default:"" "QUERY_STRING";
-        request_method = Sys.getenv "REQUEST_METHOD";
-        request_uri = Sys.getenv "REQUEST_URI";
+        host = Os.getenv_safe ~default:name "HTTP_HOST";
+        http_cookie = Os.getenv_safe ~default:"" "HTTP_COOKIE";
+        path_info = Os.getenv_safe ~default:"" "PATH_INFO";
+        query_string = Os.getenv_safe ~default:"" "QUERY_STRING";
+        request_method = Os.getenv "REQUEST_METHOD";
+        request_uri = Os.getenv "REQUEST_URI";
         scheme =
-          ( match getenv_safe ~default:"" "HTTPS" with
+          ( match Os.getenv_safe ~default:"" "HTTPS" with
           | "on" -> "https"
           | _ -> "http" );
-        server_port = Sys.getenv "SERVER_PORT";
+        script_name = Os.getenv "SCRIPT_NAME";
+        server_port = Os.getenv "SERVER_PORT";
       }
     in
-    Ok ret
+    consolidate ret
   with Not_found -> Error "Not Found."

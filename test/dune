@@ -2,6 +2,7 @@
 (tests
  (names
    geohash_test
+   cgi_test
    route_test
  )
  (libraries Lib))
