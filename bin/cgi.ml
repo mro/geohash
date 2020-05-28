@@ -27,14 +27,20 @@ let handle_query_string qs =
   match Route.coord_from_qs qs with
   | Error _ -> error 406 "Cannot parse query string."
   | Ok coord -> (
-      let prec = 10 in
+      let prec =
+        (* rough estimate: digits ~ length - q= and  3 separators
+         * bits = digits * ln(10)/ln(2)
+         * geohash has 5 bit per char, 
+         * but no less than 2 and no more than 12 *)
+        float ((qs |> String.length) - 5) *. 3.3219 /. 5.
+        |> ceil |> truncate |> max 2 |> min 12
+      in
       match Lib.Geohash.encode prec coord with
       | Ok hash -> [ hash; "gpx" ] |> String.concat "/" |> redirect
       | _ -> error 406 "Cannot encode coords." )
 
 let handle_hash req =
-  let pa = req.path_info |> String.split_on_char '/' in
-  match pa with
+  match req.path_info |> String.split_on_char '/' with
   | [ ""; hash; "gpx" ] -> (
       match Lib.Geohash.decode hash with
       | Error _ -> error 406 "Cannot decode hash."

@@ -24,19 +24,25 @@ let () = assert (1 + 1 = 2)
 
 let test_encode_sunshine () =
   (* https://github.com/francoisroyer/ocaml-geohash/blob/master/geohash.ml#L200 *)
-  match Geohash.encode 11 (57.649111, 10.407440) with
-  | Error _ -> assert false
-  | Ok hash -> Assert2.equals_string "hash" "u4pruydqqvj" hash
+  (57.649111, 10.407440) |> Geohash.encode 26 |> Result.get_ok
+  |> Assert2.equals_string "test_encode_sunshine #0"
+       "u4pruydqqvjwpq9g1m5qtr1000";
+  (57.649111, 10.407440) |> Geohash.encode 11 |> Result.get_ok
+  |> Assert2.equals_string "test_encode_sunshine #1" "u4pruydqqvj";
+  (57.649111, 10.407440) |> Geohash.encode 5 |> Result.get_ok
+  |> Assert2.equals_string "test_encode_sunshine #2" "u4pru";
+  (57.649111, 10.407440) |> Geohash.encode 2 |> Result.get_ok
+  |> Assert2.equals_string "test_encode_sunshine #3" "u4"
 
 let test_decode_sunshine () =
   (* https://github.com/francoisroyer/ocaml-geohash/blob/master/geohash.ml#L200 *)
-  ( match Geohash.decode "u4pruydqqvj" with
-  | Error _ -> assert false
-  | Ok ((lat, lon), (dlat, dlon)) ->
-      Assert2.equals_float "lat" 57.649111 lat 1e-6;
-      Assert2.equals_float "lon" 10.407440 lon 1e-6;
-      Assert2.equals_float "dlat" 1.34110450745e-06 dlat 1e-17;
-      Assert2.equals_float "dlon" 1.34110450745e-06 dlon 1e-17 );
+  (let (lat, lon), (dlat, dlon) =
+     Geohash.decode "u4pruydqqvj" |> Result.get_ok
+   in
+   Assert2.equals_float "lat" 57.649111 lat 1e-6;
+   Assert2.equals_float "lon" 10.407440 lon 1e-6;
+   Assert2.equals_float "dlat" 1.34110450745e-06 dlat 1e-17;
+   Assert2.equals_float "dlon" 1.34110450745e-06 dlon 1e-17);
   (* https://github.com/mariusae/ocaml-geohash/blob/master/lib_test/test.ml#L7 *)
   match Geohash.decode "9q8yyk8yuv" with
   | Error _ -> assert false
