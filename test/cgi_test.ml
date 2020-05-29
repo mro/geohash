@@ -36,18 +36,19 @@ let ra =
 (* https://tools.ietf.org/html/rfc3875#section-4.1.5 *)
 let test_consolidate_path_info_workaround () =
   let re =
-    { ra with path_info = "/sub/wrong.cgi" } |> consolidate |> Result.get_ok
+    Ok { ra with path_info = "/sub/wrong.cgi" } |> consolidate |> Result.get_ok
   in
   Assert2.equals_string "test_consolidate_path_info_workaround" "" re.path_info
 
 (* https://tools.ietf.org/html/rfc3875#section-4.1.5 *)
 let test_consolidate_path_info_buggy_workaround () =
   let re =
-    {
-      ra with
-      path_info = "/sub/wrong.cgi";
-      request_uri = "/sub/wrong.cgi/sub/wrong.cgi";
-    }
+    Ok
+      {
+        ra with
+        path_info = "/sub/wrong.cgi";
+        request_uri = "/sub/wrong.cgi/sub/wrong.cgi";
+      }
     |> consolidate |> Result.get_ok
   in
   Assert2.equals_string

@@ -21,7 +21,7 @@
 let camel = "🐫"
 
 module Os = struct
-  let getenv s = Sys.getenv s
+  let getenv = Sys.getenv
 
   (* https://github.com/rixed/ocaml-cgi/blob/master/cgi.ml#L169 *)
   let getenv_safe ?default s =
@@ -69,28 +69,22 @@ type req_raw = {
   server_port : string;
 }
 
-(* https://tools.ietf.org/html/rfc7231#section-6 *)
-let consolidate req =
-  Ok
-    {
-      req with
-      path_info =
-        (* despite https://tools.ietf.org/html/rfc7231#section-6 1and1.de
-         * webshosting Apache returns the script_name instead an empty (nonex)
-         * path_info in case *)
-        ( match req.path_info = req.script_name with
-        | true -> ""
-        | false -> req.path_info );
-    }
+let consolidate req' =
+  match req' with
+  | Error _ -> req'
+  | Ok req -> (
+      (* despite https://tools.ietf.org/html/rfc3875#section-4.1.13 1und1.de
+       * webhosting returns the script_name instead an empty or nonex path_info in
+       * case *)
+      match req.path_info = req.script_name with
+      | true -> Ok { req with path_info = "" }
+      | false -> req' )
 
-(* very basic, minimal parsing only.
- *
- * https://tools.ietf.org/html/rfc3875#section-4.1.13
- *)
+(* Almost trivial. https://tools.ietf.org/html/rfc3875 *)
 let request_from_env () =
   try
     let name = Os.getenv "SERVER_NAME" in
-    let ret =
+    Ok
       {
         host = Os.getenv_safe ~default:name "HTTP_HOST";
         http_cookie = Os.getenv_safe ~default:"" "HTTP_COOKIE";
@@ -105,6 +99,4 @@ let request_from_env () =
         script_name = Os.getenv "SCRIPT_NAME";
         server_port = Os.getenv "SERVER_PORT";
       }
-    in
-    consolidate ret
   with Not_found -> Error "Not Found."

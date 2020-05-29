@@ -57,25 +57,29 @@ let handle_hash req =
              creator='%s'>\n\
             \  <wpt lat='%f' lon='%f'>\n\
             \    <name>#%s</name>\n\
-            \    <link>%s/%s/%s</link>\n\
+            \    <link>%s://%s:%s%s</link>\n\
             \  </wpt>\n\
              </gpx>"
-            xslt base lat lon hash base hash "gpx";
+            xslt base lat lon hash req.scheme req.host req.server_port
+            req.request_uri;
           0 )
   | _ -> error 404 "Not found"
 
 let handle req =
-  if "GET" <> req.request_method then error 405 "Method Not Allowed"
-  else
-    match req.path_info with
-    | "/about" -> dump_clob "text/xml" Res.doap_rdf
-    | "/LICENSE" -> dump_clob "text/plain" Res._LICENSE
-    | "/doap2html.xslt" -> dump_clob "text/xml" Res.doap2html_xslt
-    | "/gpx2html.xslt" -> dump_clob "text/xml" Res.gpx2html_xslt
-    | "" -> [ req.request_uri; "/" ] |> String.concat "" |> redirect
-    | "/" ->
-        if "" = req.query_string then
-          [ req.request_uri; "u154c"; "/"; "gpx" ]
-          |> String.concat "" |> redirect
-        else handle_query_string req.query_string
-    | _ -> handle_hash req
+  let mercator_birth = "u154c" in
+  match req.request_method with
+  | "GET" -> (
+      match req.path_info with
+      | "/about" -> dump_clob "text/xml" Res.doap_rdf
+      | "/LICENSE" -> dump_clob "text/plain" Res._LICENSE
+      | "/doap2html.xslt" -> dump_clob "text/xml" Res.doap2html_xslt
+      | "/gpx2html.xslt" -> dump_clob "text/xml" Res.gpx2html_xslt
+      | "" -> [ req.request_uri; "/" ] |> String.concat "" |> redirect
+      | "/" -> (
+          match req.query_string with
+          | "" ->
+              [ req.request_uri; mercator_birth; "/"; "gpx" ]
+              |> String.concat "" |> redirect
+          | _ -> handle_query_string req.query_string )
+      | _ -> handle_hash req )
+  | _ -> error 405 "Method Not Allowed"
