@@ -46,22 +46,21 @@ let handle_hash req =
       | Error _ -> error 406 "Cannot decode hash."
       | Ok ((lat, lon), _) ->
           let mime = "text/xml"
-          and base = "https://geohash.mro.name/geohash.cgi"
-          and zoom = 12 in
-          Printf.printf "Content-type: %s\n" mime;
+          and xslt = "../gpx2html.xslt"
+          and base = "http://purl.mro.name/geohash" in
+          Printf.printf "%s: %s\n" "Content-Type" mime;
           Printf.printf "\n";
           Printf.printf
             "<?xml version='1.0'?>\n\
-             <?xml-stylesheet type='text/xsl' href='../gpx2html.xslt'?>\n\
+             <?xml-stylesheet type='text/xsl' href='%s'?>\n\
              <gpx xmlns='http://www.topografix.com/GPX/1/1' version='1.1' \
-             creator='http://purl.mro.name/geohash'>\n\
+             creator='%s'>\n\
             \  <wpt lat='%f' lon='%f'>\n\
             \    <name>#%s</name>\n\
             \    <link>%s/%s/%s</link>\n\
-            \    <cmt>zoom:%d</cmt>\n\
             \  </wpt>\n\
              </gpx>"
-            lat lon hash base hash "gpx" zoom;
+            xslt base lat lon hash base hash "gpx";
           0 )
   | _ -> error 404 "Not found"
 
