@@ -5,7 +5,9 @@
   <Project>
     <name>#🌐 geohash</name>
     <shortdesc xml:lang="en">#🌐 geohash converter 🐫. Commandline and CGI. Zero-config, single-file.</shortdesc>
-    <description xml:lang="en"></description>
+    <description xml:lang="en">Convert WGS84 lat/lon pairs to [Gustavo Niemeyer](http://niemeyer.net/)s
+[Geohash](http://en.wikipedia.org/wiki/Geohash) and back. Web and commandline, 🐪,
+statically linked, single-file, zero-config.</description>
     <homepage rdf:resource="http://purl.mro.name/geohash"/>
     <bug-database rdf:resource="https://code.mro.name/mro/geohash/issues"/>
     <service-endpoint rdf:resource="."/>
@@ -16,6 +18,17 @@
     <license rdf:resource="https://spdx.org/licenses/GPL-3.0-only"/>
     <maintainer rdf:resource="https://code.mro.name/mro"/>
     <wiki rdf:resource="https://code.mro.name/mro/geohash/wiki"/>
+    <repository>
+      <GitRepository>
+        <browse rdf:resource="https://code.mro.name/mro/geohash"/>
+        <location rdf:resource="https://code.mro.name/mro/geohash.git"/>
+      </GitRepository>
+    </repository>
+    <repository>
+      <GitRepository>
+        <browse rdf:resource="https://mro.name/src/geohash.git"/>
+      </GitRepository>
+    </repository>
     <repository>
       <GitRepository>
         <browse rdf:resource="https://notabug.org/mro/geohash"/>
@@ -41,12 +54,6 @@
     <repository>
       <GitRepository>
         <browse rdf:resource="https://gitlab.com/mro/geohash"/>
-      </GitRepository>
-    </repository>
-    <repository>
-      <GitRepository>
-        <browse rdf:resource="https://code.mro.name/mro/geohash"/>
-        <location rdf:resource="https://code.mro.name/mro/geohash.git"/>
       </GitRepository>
     </repository>
  </Project>

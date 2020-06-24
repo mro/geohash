@@ -1,9 +1,12 @@
 
 # geohash
 
-Converter for web and commandline.
+Convert WGS84 lat/lon pairs to [Gustavo Niemeyer](http://niemeyer.net/)s
+[Geohash](http://en.wikipedia.org/wiki/Geohash) and back. Web and commandline, 🐪,
+statically linked, single-file, zero-config.
 
-* https://en.wikipedia.org/wiki/Geohash
+See also
+
 * https://tools.ietf.org/html/rfc5870
 * https://github.com/francoisroyer/ocaml-geohash
 * https://github.com/mariusae/ocaml-geohash

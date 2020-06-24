@@ -36,17 +36,17 @@ let handle_query_string qs =
         |> ceil |> truncate |> max 2 |> min 12
       in
       match Lib.Geohash.encode prec coord with
-      | Ok hash -> [ hash; "gpx" ] |> String.concat "/" |> redirect
+      | Ok hash -> hash |> redirect
       | _ -> error 406 "Cannot encode coords." )
 
 let handle_hash req =
   match req.path_info |> String.split_on_char '/' with
-  | [ ""; hash; "gpx" ] -> (
+  | [ ""; hash ] -> (
       match Lib.Geohash.decode hash with
       | Error _ -> error 406 "Cannot decode hash."
       | Ok ((lat, lon), _) ->
           let mime = "text/xml"
-          and xslt = "../gpx2html.xslt"
+          and xslt = "gpx2html.xslt"
           and base = "http://purl.mro.name/geohash" in
           Printf.printf "%s: %s\n" "Content-Type" mime;
           Printf.printf "\n";
@@ -78,7 +78,7 @@ let handle req =
       | "/" -> (
           match req.query_string with
           | "" ->
-              [ req.request_uri; mercator_birth; "/"; "gpx" ]
+              [ req.request_uri; mercator_birth ]
               |> String.concat "" |> redirect
           | _ -> handle_query_string req.query_string )
       | _ -> handle_hash req )
