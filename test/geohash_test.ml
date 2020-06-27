@@ -41,16 +41,16 @@ let test_decode_sunshine () =
    in
    Assert2.equals_float "lat" 57.649111 lat 1e-6;
    Assert2.equals_float "lon" 10.407440 lon 1e-6;
-   Assert2.equals_float "dlat" 1.34110450745e-06 dlat 1e-17;
-   Assert2.equals_float "dlon" 1.34110450745e-06 dlon 1e-17);
+   Assert2.equals_float "dlat" 6.70552253723e-07 dlat 1e-17;
+   Assert2.equals_float "dlon" 6.70552253723e-07 dlon 1e-17);
   (* https://github.com/mariusae/ocaml-geohash/blob/master/lib_test/test.ml#L7 *)
   match Geohash.decode "9q8yyk8yuv" with
   | Error _ -> assert false
   | Ok ((lat, lon), (dlat, dlon)) ->
       Assert2.equals_float "lat" 37.7749295 lat 1e-5;
       Assert2.equals_float "lon" (-122.4194155) lon 1e-6;
-      Assert2.equals_float "dlat" 5.36441802979e-06 dlat 1e-17;
-      Assert2.equals_float "dlon" 1.07288360596e-05 dlon 1e-16
+      Assert2.equals_float "dlat" 2.68220901489e-06 dlat 1e-17;
+      Assert2.equals_float "dlon" 5.36441802979e-06 dlon 1e-16
 
 let test_decode_failure () =
   (* https://github.com/francoisroyer/ocaml-geohash/blob/master/geohash.ml#L200 *)

@@ -96,10 +96,11 @@ function(bas)
     <html xmlns="http://www.w3.org/1999/xhtml">
       <xsl:call-template name="head"/>
 
+      <xsl:variable name="bbox" select="g:metadata/g:bounds"/>
       <xsl:variable name="wpt" select="g:wpt[1]"/>
 
       <body>
-       <iframe src="https://www.openstreetmap.org/export/embed.html?bbox={$wpt/@lon - $dlon},{$wpt/@lat - $dlat},{$wpt/@lon + $dlon},{$wpt/@lat + $dlat}&amp;marker={$wpt/@lat},{$wpt/@lon}"/>
+        <iframe src="https://www.openstreetmap.org/export/embed.html?bbox={$bbox/@minlon},{$bbox/@minlat},{$bbox/@maxlon},{$bbox/@maxlat}&amp;marker={$wpt/@lat},{$wpt/@lon}"/>
 
         <form action="." id="search_form" name="search_form">
           <input name="q" placeholder="lat lon" size="20" value="{$wpt/@lat},{$wpt/@lon}" autofocus="autofocus" />

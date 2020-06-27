@@ -44,24 +44,30 @@ let handle_hash req =
   | [ ""; hash ] -> (
       match Lib.Geohash.decode hash with
       | Error _ -> error 406 "Cannot decode hash."
-      | Ok ((lat, lon), _) ->
+      | Ok ((lat, lon), (dlat, dlon)) ->
           let mime = "text/xml"
           and xslt = "gpx2html.xslt"
           and base = "http://purl.mro.name/geohash" in
           Printf.printf "%s: %s\n" "Content-Type" mime;
           Printf.printf "\n";
           Printf.printf
-            "<?xml version='1.0'?>\n\
+            "<?xml version='1.0'?><!-- \
+             https://www.topografix.com/GPX/1/1/gpx.xsd -->\n\
              <?xml-stylesheet type='text/xsl' href='%s'?>\n\
              <gpx xmlns='http://www.topografix.com/GPX/1/1' version='1.1' \
              creator='%s'>\n\
+            \  <metadata>\n\
+            \    <link href='%s://%s:%s%s'/>\n\
+            \    <bounds minlat='%f' minlon='%f' maxlat='%f' maxlon='%f'/>\n\
+            \  </metadata>\n\
             \  <wpt lat='%f' lon='%f'>\n\
             \    <name>#%s</name>\n\
-            \    <link>%s://%s:%s%s</link>\n\
+            \    <link href='%s://%s:%s%s'/>\n\
             \  </wpt>\n\
              </gpx>"
-            xslt base lat lon hash req.scheme req.host req.server_port
-            req.request_uri;
+            xslt base req.scheme req.host req.server_port req.request_uri
+            (lat -. dlat) (lon -. dlon) (lat +. dlat) (lon +. dlon) lat lon hash
+            req.scheme req.host req.server_port req.request_uri;
           0 )
   | _ -> error 404 "Not found"
 

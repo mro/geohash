@@ -108,8 +108,7 @@ let encode chars coord =
     |> List.rev |> List.map P.b32_int_to_char |> String.concat "" )
 
 let decode hash =
-  (* may change to halfspan *)
-  let span = function mi, ma -> ma -. mi in
+  let span = function mi, ma -> 0.5 *. (ma -. mi) in
   match P.decode_chars hash 0 (String.length hash) (Ok P.world) with
   | Ok (lon, lat) -> Ok ((P.mid lat, P.mid lon), (span lat, span lon))
   | other -> other
