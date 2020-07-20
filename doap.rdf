@@ -26,9 +26,21 @@ statically linked, single-file, zero-config.</description>
     </repository>
     <repository>
       <GitRepository>
-        <browse rdf:resource="https://mro.name/src/geohash.git"/>
+        <browse rdf:resource="https://codeberg.org/mro/geohash"/>
       </GitRepository>
     </repository>
+    <repository>
+      <GitRepository>
+        <browse rdf:resource="https://git.sr.ht/~mro/geohash"/>
+      </GitRepository>
+    </repository>
+<!--
+    <repository>
+      <GitRepository>
+        <browse rdf:resource="https://repo.or.cz/geohash.git"/>
+      </GitRepository>
+    </repository>
+-->
     <repository>
       <GitRepository>
         <browse rdf:resource="https://notabug.org/mro/geohash"/>
@@ -41,19 +53,12 @@ statically linked, single-file, zero-config.</description>
     </repository>
     <repository>
       <GitRepository>
-        <browse rdf:resource="https://codeberg.org/mro/geohash"/>
-      </GitRepository>
-    </repository>
-<!--
-    <repository>
-      <GitRepository>
-        <browse rdf:resource="https://repo.or.cz/geohash.git"/>
-      </GitRepository>
-    </repository>
--->
-    <repository>
-      <GitRepository>
         <browse rdf:resource="https://gitlab.com/mro/geohash"/>
+      </GitRepository>
+    </repository>
+    <repository>
+      <GitRepository>
+        <browse rdf:resource="https://mro.name/src/geohash.git"/>
       </GitRepository>
     </repository>
  </Project>

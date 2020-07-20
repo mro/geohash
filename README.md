@@ -34,3 +34,6 @@ done!
 | Changeability   |           |   ×  |        |            |
 | Portability     |           |      |    ×   |            |
 
+## Mirrors
+
+see doap.rdf
