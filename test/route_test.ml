@@ -23,6 +23,9 @@ open Lib.Route
 let test_qs () =
   assert (
     match coord_from_qs "q=1.2,3.4" with Ok (1.2, 3.4) -> true | _ -> false );
+  assert (
+    match coord_from_qs "q=geo%3A47.5440%2C15.4396%3Fz%3D12" with Ok (47.5440,
+    15.4396) -> true | _ -> false ); 
   match coord_from_qs "q=1.u2 , ; 3.4" with
   | Error (`NoMatch (_, original)) -> assert (original != "")
   | _ -> assert false

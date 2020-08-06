@@ -86,18 +86,18 @@ module P = struct
         |> decode_bits bits (idx - 1) lon_off
 
   (* Decode one character of a geohash and refine the area. *)
-  let rec decode_chars hash idx max area =
+  let rec decode_chars hash idx stop area =
     match area with
-    | Error e -> Error e
+    | Error _ -> area
     | Ok area' -> (
-        match idx - max with
-        | 0 -> area
+        match idx = stop with
+        | true -> area
         | _ -> (
             match idx |> String.get hash |> b32_int_of_char with
             | Error e -> Error e
             | Ok bits ->
                 Ok (decode_bits bits 4 (idx mod 2) area')
-                |> decode_chars hash (idx + 1) max ) )
+                |> decode_chars hash (idx + 1) stop ) )
 end
 
 let encode chars coord =

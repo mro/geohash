@@ -86,6 +86,6 @@ let handle req =
           | "" ->
               [ req.request_uri; mercator_birth ]
               |> String.concat "" |> redirect
-          | _ -> handle_query_string req.query_string )
+          | s -> s |> handle_query_string )
       | _ -> handle_hash req )
   | _ -> error 405 "Method Not Allowed"
