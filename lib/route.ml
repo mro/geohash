@@ -14,8 +14,8 @@ module P = struct
   let lat_lon_pair = float <&> pcre "([,; +]|%2C|%3B|%20)+" *> float
 
   let geo_uri =
-    opt (str "geo:" <|> str "geo%3A") *> lat_lon_pair
-    <* opt (pcre "[?]z=[0-9]+" <|> pcre "%3Fz%3D[0-9]+")
+    opt (pcre "geo(:|%3A)") *> lat_lon_pair
+    <* opt (pcre "(\\?|%3F)z(=|%3D)[0-9]+")
 
   let lat_lon = compile (geo_uri <* stop)
 
