@@ -41,7 +41,9 @@ module P = struct
 
   let world = ((-180., 180.), (-90., 90.))
 
-  let mid = function mi, ma -> (mi +. ma) /. 2.
+  let mid = function a, b -> (a +. b) /. 2.
+
+  let span = function mi, ma -> (ma -. mi) /. 2.
 
   (* which bucket/quadrant to go on with *)
   let middle_earth do_lon area hi =
@@ -51,29 +53,6 @@ module P = struct
     | true, false -> ((lo0, mid lon), lat)
     | false, true -> (lon, (mid lat, la1))
     | false, false -> (lon, (la0, mid lat))
-
-  (* Recurse per bit, encode either lon (even) or lat (odd)
-   * and add chunks of 5 bits to a list to be returned finally. *)
-  let rec encode_wrk pt charsleft step bits ret area =
-    match charsleft with
-    | 0 -> ret
-    | _ -> (
-        let do_lon = 0 = step mod 2 in
-        let hi =
-          match (do_lon, pt, area) with
-          | true, (lo, _), (lon, _) -> lo >= mid lon
-          | false, (_, la), (_, lat) -> la >= mid lat
-        in
-        let area' = middle_earth do_lon area hi and sm5 = step mod 5 in
-        let bits' =
-          bits lor match hi with true -> 1 lsl (4 - sm5) | false -> 0
-        in
-        match sm5 with
-        | 4 ->
-            encode_wrk pt (charsleft - 1) (step + 1) 0
-              (ret |> List.cons bits')
-              area'
-        | _ -> encode_wrk pt charsleft (step + 1) bits' ret area' )
 
   (* Decode a chunk of 5 bits and refine the area. *)
   let rec decode_bits bits idx lon_off area =
@@ -98,6 +77,29 @@ module P = struct
             | Ok bits ->
                 Ok (decode_bits bits 4 (idx mod 2) area')
                 |> decode_chars hash (idx + 1) stop ) )
+
+  (* Recurse per bit, encode either lon (even) or lat (odd)
+   * and add chunks of 5 bits to a list to be returned finally. *)
+  let rec encode_wrk pt charsleft step bits ret area =
+    match charsleft with
+    | 0 -> ret
+    | _ -> (
+        let do_lon = 0 = step mod 2 in
+        let hi =
+          match (do_lon, pt, area) with
+          | true, (lo, _), (lon, _) -> lo >= mid lon
+          | false, (_, la), (_, lat) -> la >= mid lat
+        in
+        let area' = middle_earth do_lon area hi and sm5 = step mod 5 in
+        let bits' =
+          bits lor match hi with true -> 1 lsl (4 - sm5) | false -> 0
+        in
+        match sm5 with
+        | 4 ->
+            encode_wrk pt (charsleft - 1) (step + 1) 0
+              (ret |> List.cons bits')
+              area'
+        | _ -> encode_wrk pt charsleft (step + 1) bits' ret area' )
 end
 
 let encode chars coord =
@@ -108,7 +110,8 @@ let encode chars coord =
     |> List.rev |> List.map P.b32_int_to_char |> String.concat "" )
 
 let decode hash =
-  let span = function mi, ma -> 0.5 *. (ma -. mi) in
   match P.decode_chars hash 0 (String.length hash) (Ok P.world) with
-  | Ok (lon, lat) -> Ok ((P.mid lat, P.mid lon), (span lat, span lon))
+  | Ok (lon, lat) ->
+      let op f = (f lat, f lon) in
+      Ok (op P.mid, op P.span)
   | other -> other

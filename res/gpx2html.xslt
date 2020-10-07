@@ -103,7 +103,7 @@ function(bas)
         <iframe src="https://www.openstreetmap.org/export/embed.html?bbox={$bbox/@minlon},{$bbox/@minlat},{$bbox/@maxlon},{$bbox/@maxlat}&amp;marker={$wpt/@lat},{$wpt/@lon}"/>
 
         <form action="." id="search_form" name="search_form">
-          <input name="q" placeholder="lat lon" size="20" value="{$wpt/@lat},{$wpt/@lon}" autofocus="autofocus" />
+          <input name="q" placeholder="lat lon or geo:lat,lon" size="20" value="{$wpt/@lat},{$wpt/@lon}" autofocus="autofocus" />
 <!-- 
           <span>Target URL</span>
           <input name="redir" size="60" placeholder="https://www.openstreetmap.org/?mlat={lat}&amp;mlon={lon}#map={zoom}/{lat}/{lon}">
