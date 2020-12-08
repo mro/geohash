@@ -65,18 +65,16 @@ module P = struct
         |> decode_bits bits (idx - 1) lon_off
 
   (* Decode one character of a geohash and refine the area. *)
-  let rec decode_chars hash idx stop area =
-    match area with
-    | Error _ -> area
-    | Ok area' -> (
+  let rec decode_chars hash idx stop area' =
+    Result.bind area' (fun area ->
         match idx = stop with
-        | true -> area
-        | _ -> (
-            match idx |> String.get hash |> b32_int_of_char with
-            | Error e -> Error e
-            | Ok bits ->
-                Ok (decode_bits bits 4 (idx mod 2) area')
-                |> decode_chars hash (idx + 1) stop ) )
+        | true -> area'
+        | _ ->
+            Result.bind
+              (idx |> String.get hash |> b32_int_of_char)
+              (fun bits ->
+                Ok (decode_bits bits 4 (idx mod 2) area)
+                |> decode_chars hash (idx + 1) stop))
 
   (* Recurse per bit, encode either lon (even) or lat (odd)
    * and add chunks of 5 bits to a list to be returned finally. *)
@@ -110,8 +108,8 @@ let encode chars coord =
     |> List.rev |> List.map P.b32_int_to_char |> String.concat "" )
 
 let decode hash =
-  match P.decode_chars hash 0 (String.length hash) (Ok P.world) with
-  | Ok (lon, lat) ->
+  Result.bind
+    (P.decode_chars hash 0 (String.length hash) (Ok P.world))
+    (fun (lon, lat) ->
       let op f = (f lat, f lon) in
-      Ok (op P.mid, op P.span)
-  | other -> other
+      Ok (op P.mid, op P.span))

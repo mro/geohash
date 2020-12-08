@@ -24,20 +24,17 @@ open Lib
 open Lib.Cgi
 
 let handle_query_string qs =
-  match Route.coord_from_qs qs with
-  | Error _ -> error 406 "Cannot parse query string."
-  | Ok coord -> (
-      let prec =
-        (* rough estimate: digits ~ length - q= and  3 separators
-         * bits = digits * ln(10)/ln(2)
-         * geohash has 5 bit per char, 
-         * but no less than 2 and no more than 12 *)
-        float ((qs |> String.length) - 5) *. 3.3219 /. 5.
-        |> ceil |> truncate |> max 2 |> min 12
-      in
-      match Lib.Geohash.encode prec coord with
-      | Ok hash -> hash |> redirect
-      | _ -> error 406 "Cannot encode coords." )
+  let prec =
+    (* rough estimate: digits ~ length - q= and  3 separators
+     * bits = digits * ln(10)/ln(2)
+     * geohash has 5 bit per char, *)
+    float ((qs |> String.length) - 5) *. 3.3219 /. 5.
+    |> ceil |> truncate
+    (* but no less than 2 and no more than 12 *)
+    |> max 2
+    |> min 12
+  in
+  Result.bind (qs |> Route.coord_from_qs) (prec |> Lib.Geohash.encode)
 
 let handle_hash req =
   match req.path_info |> String.split_on_char '/' with
@@ -86,6 +83,11 @@ let handle req =
           | "" ->
               [ req.request_uri; mercator_birth ]
               |> String.concat "" |> redirect
-          | s -> s |> handle_query_string )
+          | s -> (
+              match s |> handle_query_string with
+              | Ok hash -> hash |> redirect
+              | Error (`NoMatch (_, _)) ->
+                  error 406 "Cannot parse query string."
+              | Error _ -> error 406 "Cannot encode coords." ) )
       | _ -> handle_hash req )
   | _ -> error 405 "Method Not Allowed"
