@@ -3,8 +3,7 @@
 
   Turn DOAP rdf into html.
 
-  Copyright (c) 2013-2020, mro.name/~me Marcus Rohrmoser mobile Software
-  All rights reserved.
+  Copyright (c) 2013-2021 Marcus Rohrmoser mobile Software http://mro.name/~me. All rights reserved.
 
   Redistribution and use in source and binary forms, with or without modification, are permitted
   provided that the following conditions are met:

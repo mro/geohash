@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   geohash
-  Copyright (C) 2020-2020  Marcus Rohrmoser, http://purl.mro.name/geohash
+  Copyright (c) 2020-2021 Marcus Rohrmoser mobile Software http://mro.name/~me. All rights reserved.
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
