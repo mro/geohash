@@ -63,7 +63,6 @@ type req_raw = {
   path_info : string;
   query_string : string;
   request_method : string;
-  request_uri : string;
   scheme : string;
   script_name : string;
   server_port : string;
@@ -80,6 +79,11 @@ let consolidate req' =
       | true -> Ok { req with path_info = "" }
       | false -> req' )
 
+let request_uri req =
+  match req.query_string with
+  | "" -> req.script_name ^ req.path_info
+  | qs -> req.script_name ^ req.path_info ^ "?" ^ qs
+
 (* Almost trivial. https://tools.ietf.org/html/rfc3875 *)
 let request_from_env () =
   try
@@ -91,7 +95,7 @@ let request_from_env () =
         path_info = Os.getenv_safe ~default:"" "PATH_INFO";
         query_string = Os.getenv_safe ~default:"" "QUERY_STRING";
         request_method = Os.getenv "REQUEST_METHOD";
-        request_uri = Os.getenv "REQUEST_URI";
+        (* request_uri = Os.getenv "REQUEST_URI"; *)
         scheme =
           ( match Os.getenv_safe ~default:"" "HTTPS" with
           | "on" -> "https"

@@ -27,7 +27,7 @@ let ra =
     path_info = "";
     query_string = "badly";
     request_method = "GET";
-    request_uri = "/sub/wrong.cgi?badly";
+    (* request_uri = "/sub/wrong.cgi?badly"; *)
     scheme = "http";
     script_name = "/sub/wrong.cgi";
     server_port = "80";
@@ -46,8 +46,8 @@ let test_consolidate_path_info_buggy_workaround () =
     Ok
       {
         ra with
-        path_info = "/sub/wrong.cgi";
-        request_uri = "/sub/wrong.cgi/sub/wrong.cgi";
+        path_info =
+          "/sub/wrong.cgi" (* request_uri = "/sub/wrong.cgi/sub/wrong.cgi"; *);
       }
     |> consolidate |> Result.get_ok
   in
@@ -55,6 +55,11 @@ let test_consolidate_path_info_buggy_workaround () =
     "wrong but accepted until 1and1 fixes their shit (prbly never)." ""
     re.path_info
 
+let test_request_uri () =
+  let uri = { ra with path_info = "/dir/" } |> request_uri in
+  Assert2.equals_string "." "/sub/wrong.cgi/dir/?badly" uri
+
 let () =
   test_consolidate_path_info_workaround ();
-  test_consolidate_path_info_buggy_workaround ()
+  test_consolidate_path_info_buggy_workaround ();
+  test_request_uri ()

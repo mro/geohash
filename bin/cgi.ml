@@ -44,6 +44,7 @@ let handle_hash req =
       | Ok ((lat, lon), (dlat, dlon)) ->
           let mime = "text/xml"
           and xslt = "gpx2html.xslt"
+          and uri = req |> request_uri
           and base = "http://purl.mro.name/geohash" in
           Printf.printf "%s: %s\n" "Content-Type" mime;
           Printf.printf "\n";
@@ -62,14 +63,14 @@ let handle_hash req =
             \    <link href='%s://%s:%s%s'/>\n\
             \  </wpt>\n\
              </gpx>"
-            xslt base req.scheme req.host req.server_port req.request_uri
-            (lat -. dlat) (lon -. dlon) (lat +. dlat) (lon +. dlon) lat lon hash
-            req.scheme req.host req.server_port req.request_uri;
+            xslt base req.scheme req.host req.server_port uri (lat -. dlat)
+            (lon -. dlon) (lat +. dlat) (lon +. dlon) lat lon hash req.scheme
+            req.host req.server_port uri;
           0 )
   | _ -> error 404 "Not found"
 
 let handle req =
-  let mercator_birth = "u154c" in
+  let mercator_birth = "u154c" and uri = req |> request_uri in
   match req.request_method with
   | "GET" -> (
       match req.path_info with
@@ -77,12 +78,10 @@ let handle req =
       | "/LICENSE" -> dump_clob "text/plain" Res._LICENSE
       | "/doap2html.xslt" -> dump_clob "text/xml" Res.doap2html_xslt
       | "/gpx2html.xslt" -> dump_clob "text/xml" Res.gpx2html_xslt
-      | "" -> [ req.request_uri; "/" ] |> String.concat "" |> redirect
+      | "" -> uri ^ "/" |> redirect
       | "/" -> (
           match req.query_string with
-          | "" ->
-              [ req.request_uri; mercator_birth ]
-              |> String.concat "" |> redirect
+          | "" -> uri ^ mercator_birth |> redirect
           | s -> (
               match s |> handle_query_string with
               | Ok hash -> hash |> redirect
