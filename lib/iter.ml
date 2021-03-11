@@ -1,5 +1,5 @@
 (*
- * geohash.ml
+ * iter.ml
  *
  * Created by Marcus Rohrmoser on 16.05.20.
  * Copyright © 2020-2021 Marcus Rohrmoser mobile Software http://mro.name/~me. All rights reserved.
@@ -97,15 +97,15 @@ module P = struct
             encode_wrk pt (charsleft - 1) (step + 1) 0
               (ret |> List.cons bits')
               area'
-        | _ -> encode_wrk pt charsleft (step + 1) bits' ret area' )
+        | _ -> encode_wrk pt charsleft (step + 1) bits' ret area')
 end
 
-let encode chars coord =
-  let lat, lon = coord and area = P.world in
+let encode chars (lat, lon) =
+  let area = P.world in
   (* check coord inclusion? *)
   Ok
-    ( P.encode_wrk (lon, lat) chars 0 0 [] area
-    |> List.rev |> List.map P.b32_int_to_char |> String.concat "" )
+    (P.encode_wrk (lon, lat) chars 0 0 [] area
+    |> List.rev |> List.map P.b32_int_to_char |> String.concat "")
 
 let decode hash =
   Result.bind

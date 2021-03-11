@@ -34,12 +34,12 @@ let handle_query_string qs =
     |> max 2
     |> min 12
   in
-  Result.bind (qs |> Route.coord_from_qs) (prec |> Lib.Geohash.encode)
+  Result.bind (qs |> Route.coord_from_qs) (prec |> Lib.Calc.encode)
 
 let handle_hash req =
   match req.path_info |> String.split_on_char '/' with
   | [ ""; hash ] -> (
-      match Lib.Geohash.decode hash with
+      match Lib.Calc.decode hash with
       | Error _ -> error 406 "Cannot decode hash."
       | Ok ((lat, lon), (dlat, dlon)) ->
           let mime = "text/xml"
@@ -66,7 +66,7 @@ let handle_hash req =
             xslt base req.scheme req.host req.server_port uri (lat -. dlat)
             (lon -. dlon) (lat +. dlat) (lon +. dlon) lat lon hash req.scheme
             req.host req.server_port uri;
-          0 )
+          0)
   | _ -> error 404 "Not found"
 
 let handle req =
@@ -87,6 +87,6 @@ let handle req =
               | Ok hash -> hash |> redirect
               | Error (`NoMatch (_, _)) ->
                   error 406 "Cannot parse query string."
-              | Error _ -> error 406 "Cannot encode coords." ) )
-      | _ -> handle_hash req )
+              | Error _ -> error 406 "Cannot encode coords."))
+      | _ -> handle_hash req)
   | _ -> error 405 "Method Not Allowed"
