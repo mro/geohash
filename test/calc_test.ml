@@ -49,11 +49,9 @@ let test_deinterleave () =
 
 let test_quantize () =
   let la, lo = Calc.quantize (57.649111, 10.407440) in
-  Assert2.equals_float "test_quantize #1" 3523045016.82 la 0.1;
-  Assert2.equals_float "test_quantize #2" 2271649243.65 lo 0.1;
-  Int64.shift_right
-    ((Int64.of_float la, Int64.of_float lo) |> Calc.interleave)
-    4
+  Assert2.equals_float "test_quantize #1" 3523045016. (Int64.to_float la) 0.1;
+  Assert2.equals_float "test_quantize #2" 2271649243. (Int64.to_float lo) 0.1;
+  Int64.shift_right ((la, lo) |> Calc.interleave) 4
   |> Calc.base32_encode 12
   |> Assert2.equals_string "test_quantize #3" "u4pruydqqvjw"
 
@@ -85,7 +83,7 @@ let test_decode_sunshine () =
   (* https://github.com/mariusae/ocaml-geohash/blob/master/lib_test/test.ml#L7 *)
   let (lat, lon), (dlat, dlon) = "9q8yyk8yuv" |> Calc.decode |> Result.get_ok in
   Assert2.equals_float "lat 1" 37.7749308944 lat 1e-6;
-  Assert2.equals_float "lon 1" (-122.419417799) lon 1e-6;
+  Assert2.equals_float "lon 1" (-122.419415116) lon 1e-6;
   Assert2.equals_float "dlat 1" 2.68220901489e-06 dlat 1e-17;
   Assert2.equals_float "dlon 1" 5.36441802979e-06 dlon 1e-17
 
