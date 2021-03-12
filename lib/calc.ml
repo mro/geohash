@@ -25,14 +25,22 @@
 open Int64
 
 (* wgs84 -> geohash *)
-let quantize (lat, lng) =
-  let f r x = Float.ldexp ((x /. r) +. 1.) (32 - 1) |> of_float in
-  (f 90. lat, f 180. lng)
+let quantize (lat, lon) =
+  (* see QuantizeLatBits in https://mmcloughlin.com/posts/geohash-assembly *)
+  let f r x =
+    shift_right ((x /. r) +. 1.5 |> bits_of_float) 20 |> logand 0xFFFFFFFFL
+  in
+  (f 180. lat, f 360. lon)
 
 (* geohash -> wgs84 *)
 let dequantize (lat, lon) =
-  let f r x = r *. (Float.ldexp (x |> to_float) (1 - 32) -. 1.) in
-  (f 90. lat, f 180. lon)
+  let f r x =
+    ((shift_left (x |> logand 0xFFFFFFFFL |> logor 0x3ff00000000L) 20
+     |> float_of_bits)
+    -. 1.5)
+    *. r
+  in
+  (f 180. lat, f 360. lon)
 
 let spread x =
   let f s m x' = m |> logand (x' |> logor (shift_left x' s)) in

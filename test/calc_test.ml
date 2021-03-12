@@ -1,5 +1,5 @@
 (*
- * math_test.ml
+ * calc_test.ml
  *
  * Created by Marcus Rohrmoser on 11.03.21.
  * Copyright © 2021-2021 Marcus Rohrmoser mobile Software http://mro.name/~me. All rights reserved.
@@ -87,6 +87,16 @@ let test_decode_sunshine () =
   Assert2.equals_float "dlat 1" 2.68220901489e-06 dlat 1e-17;
   Assert2.equals_float "dlon 1" 5.36441802979e-06 dlon 1e-17
 
+let test_magic () =
+  (* see QuantizeLatBits in https://mmcloughlin.com/posts/geohash-assembly *)
+  let lat = 27.988056 in
+  let h =
+    Int64.shift_right ((lat /. 180.) +. 1.5 |> Int64.bits_of_float) 20
+    |> Int64.logand 0xFFFFFFFFL
+  in
+  h |> Printf.sprintf "%#Lx"
+  |> Assert2.equals_string "test_magic #1" "0xa7ce23e4"
+
 let () =
   test_spread ();
   test_interleave ();
@@ -95,4 +105,5 @@ let () =
   test_base32_encode_a ();
   test_encode_a ();
   test_base32_decode ();
-  test_decode_sunshine ()
+  test_decode_sunshine ();
+  test_magic ()
