@@ -2,6 +2,7 @@
   (name Lib)
   (libraries
     tyre
+    optint
   )
 )
 

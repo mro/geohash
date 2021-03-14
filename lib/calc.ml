@@ -22,44 +22,60 @@
  * and https://github.com/mmcloughlin/geohash/blob/master/geohash.go 
  * and https://github.com/mmcloughlin/deconstructedgeohash/blob/master/geohash.go *)
 
-open Int64
+open Int63
 
-(* wgs84 -> geohash *)
-let quantize (lat, lng) =
-  let f r x = Float.ldexp ((x /. r) +. 1.) (32 - 1) |> of_float in
-  (f 90. lat, f 180. lng)
+(* wgs84 -> 30 bit geohash *)
+let quantize30 (lat, lng) =
+  let f r x = Float.ldexp ((x /. r) +. 0.5) 30 |> of_float in
+  (f 180. lat, f 360. lng)
 
-(* geohash -> wgs84 *)
-let dequantize (lat, lon) =
-  let f r x = r *. (Float.ldexp (x |> to_float) (1 - 32) -. 1.) in
-  (f 90. lat, f 180. lon)
+(* 30 bit geohash -> wgs84 *)
+let dequantize30 (lat, lon) =
+  let f r x = r *. (Float.ldexp (x |> to_float) (-30) -. 0.5) in
+  (f 180. lat, f 360. lon)
+
+let concat hi lo = shift_left (hi |> of_int) 32 |> logor (lo |> of_int)
+
+let x00000000ffffffff = of_int64 0x00000000ffffffffL
+
+let x0000ffff0000ffff = of_int64 0x0000ffff0000ffffL
+
+let x00ff00ff00ff00ff = of_int64 0x00ff00ff00ff00ffL
+
+let x0f0f0f0f0f0f0f0f = of_int64 0x0f0f0f0f0f0f0f0fL
+
+let x3333333333333333 = of_int64 0x3333333333333333L
+
+let x5555555555555555 = of_int64 0x3555555555555555L
 
 let spread x =
   let f s m x' = m |> logand (x' |> logor (shift_left x' s)) in
-  x |> f 16 0x0000ffff0000ffffL |> f 8 0x00ff00ff00ff00ffL
-  |> f 4 0x0f0f0f0f0f0f0f0fL |> f 2 0x3333333333333333L
-  |> f 1 0x5555555555555555L
+  x |> f 16 x0000ffff0000ffff |> f 8 x00ff00ff00ff00ff |> f 4 x0f0f0f0f0f0f0f0f
+  |> f 2 x3333333333333333 |> f 1 x5555555555555555
 
 let squash x =
   let f s m x' = m |> logand (x' |> logor (shift_right x' s)) in
-  x |> logand 0x5555555555555555L |> f 1 0x3333333333333333L
-  |> f 2 0x0f0f0f0f0f0f0f0fL |> f 4 0x00ff00ff00ff00ffL
-  |> f 8 0x0000ffff0000ffffL |> f 16 0x00000000ffffffffL
+  x |> logand x5555555555555555 |> f 1 x3333333333333333
+  |> f 2 x0f0f0f0f0f0f0f0f |> f 4 x00ff00ff00ff00ff |> f 8 x0000ffff0000ffff
+  |> f 16 x00000000ffffffff
 
 let interleave (x, y) = spread x |> logor (shift_left (spread y) 1)
 
 let deinterleave x = (squash x, squash (shift_right x 1))
 
+let x1f = of_int 0x1f
+
+(* encode the chars * 5 low bits of x *)
 let base32_encode chars x =
   let alpha = "0123456789bcdefghjkmnpqrstuvwxyz" in
   let rec f i x' b =
     match i with
     | -1 -> b
     | _ ->
-        Bytes.set b i alpha.[x' |> logand 0x1fL |> to_int];
+        Bytes.set b i alpha.[x' |> logand x1f |> to_int];
         f (i - 1) (shift_right x' 5) b
   in
-  Bytes.create chars |> f (chars - 1) x |> Bytes.to_string
+  chars |> Bytes.create |> f (chars - 1) x |> Bytes.to_string
 
 let base32_decode hash =
   let len = String.length hash in
@@ -71,11 +87,11 @@ let base32_decode hash =
         | Error e -> Error e
         | Ok v -> f (idx + 1) (v |> of_int |> logor (shift_left x 5)))
   in
-  f 0 0x0L
+  f 0 zero
 
 let encode chars wgs84 =
-  let h64 = wgs84 |> quantize |> interleave in
-  Ok (shift_right h64 4 |> base32_encode chars)
+  let h60 = wgs84 |> quantize30 |> interleave in
+  Ok (shift_right h60 (60 - (5 * chars)) |> base32_encode chars)
 
 let error_with_precision bits =
   let latBits = bits / 2 in
@@ -87,10 +103,9 @@ let error_with_precision bits =
 let decode hash =
   match base32_decode hash with
   | Error e -> Error e
-  | Ok inthash ->
+  | Ok h60 ->
       let bits = 5 * String.length hash in
-      let lat, lon =
-        shift_left inthash (64 - bits) |> deinterleave |> dequantize
+      let lat, lon = shift_left h60 (60 - bits) |> deinterleave |> dequantize30
       and latE, lonE = error_with_precision bits in
       let latE2, lonE2 = (latE *. 0.5, lonE *. 0.5) in
       Ok ((lat +. latE2, lon +. lonE2), (latE2, lonE2))
