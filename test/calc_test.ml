@@ -63,6 +63,8 @@ let test_quantize () =
   |> Assert2.equals_string "test_quantize #3" "u4pruydqqvjw"
 *)
 
+let concat hi lo = shift_left (hi |> of_int) 32 |> logor (lo |> of_int)
+
 let test_base32_decode () =
   let t i a b =
     let x = a |> base32_decode |> Result.get_ok in

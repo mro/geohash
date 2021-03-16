@@ -34,8 +34,6 @@ let dequantize30 (lat, lon) =
   let f r x = r *. (Float.ldexp (x |> to_float) (-30) -. 0.5) in
   (f 180. lat, f 360. lon)
 
-let concat hi lo = shift_left (hi |> of_int) 32 |> logor (lo |> of_int)
-
 let x00000000ffffffff = of_int64 0x00000000ffffffffL
 
 let x0000ffff0000ffff = of_int64 0x0000ffff0000ffffL
@@ -82,10 +80,10 @@ let base32_decode hash =
   let rec f idx x =
     match len - idx with
     | 0 -> Ok x
-    | _ -> (
-        match hash.[idx] |> Iter.P.b32_int_of_char with
-        | Error e -> Error e
-        | Ok v -> f (idx + 1) (v |> of_int |> logor (shift_left x 5)))
+    | _ ->
+        Result.bind
+          (hash.[idx] |> Iter.P.b32_int_of_char)
+          (fun v -> v |> of_int |> logor (shift_left x 5) |> f (idx + 1))
   in
   f 0 zero
 
@@ -101,11 +99,9 @@ let error_with_precision bits =
   (latErr, lonErr)
 
 let decode hash =
-  match base32_decode hash with
-  | Error e -> Error e
-  | Ok h60 ->
+  Result.bind (base32_decode hash) (fun h60 ->
       let bits = 5 * String.length hash in
       let lat, lon = shift_left h60 (60 - bits) |> deinterleave |> dequantize30
       and latE, lonE = error_with_precision bits in
       let latE2, lonE2 = (latE *. 0.5, lonE *. 0.5) in
-      Ok ((lat +. latE2, lon +. lonE2), (latE2, lonE2))
+      Ok ((lat +. latE2, lon +. lonE2), (latE2, lonE2)))
