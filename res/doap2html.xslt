@@ -193,7 +193,7 @@
 
   <p id="poweredby">RDF (<a href="https://en.wikipedia.org/wiki/DOAP">DOAP</a>): <tt>$ <a href=
   "http://librdf.org/raptor/rapper.html">rapper</a> --guess --output turtle '<span id=
-  "my-url">https:// url here</span>'</tt></p><script type="text/javascript">
+  "my-url">https://example.com/url-to-here</span>'</tt></p><script type="text/javascript">
 //<![CDATA[
   document.getElementById('my-url').innerText = location.href;
   //]]>

@@ -29,7 +29,7 @@ module Os = struct
     with Not_found -> (
       match default with
       | Some d -> d
-      | None -> failwith ("Cgi: the environment variable " ^ s ^ " is not set") )
+      | None -> failwith ("Cgi: the environment variable " ^ s ^ " is not set"))
 end
 
 let redirect url =
@@ -69,20 +69,17 @@ type req_raw = {
 }
 
 let consolidate req' =
-  match req' with
-  | Error _ -> req'
-  | Ok req -> (
+  Result.bind req' (fun req ->
       (* despite https://tools.ietf.org/html/rfc3875#section-4.1.13 1und1.de
        * webhosting returns the script_name instead an empty or nonex path_info in
        * case *)
       match req.path_info = req.script_name with
       | true -> Ok { req with path_info = "" }
-      | false -> req' )
+      | false -> req')
 
 let request_uri req =
-  match req.query_string with
-  | "" -> req.script_name ^ req.path_info
-  | qs -> req.script_name ^ req.path_info ^ "?" ^ qs
+  req.script_name ^ req.path_info
+  ^ match req.query_string with "" -> "" | qs -> "?" ^ qs
 
 (* Almost trivial. https://tools.ietf.org/html/rfc3875 *)
 let request_from_env () =
@@ -97,9 +94,9 @@ let request_from_env () =
         request_method = Os.getenv "REQUEST_METHOD";
         (* request_uri = Os.getenv "REQUEST_URI"; *)
         scheme =
-          ( match Os.getenv_safe ~default:"" "HTTPS" with
+          (match Os.getenv_safe ~default:"" "HTTPS" with
           | "on" -> "https"
-          | _ -> "http" );
+          | _ -> "http");
         script_name = Os.getenv "SCRIPT_NAME";
         server_port = Os.getenv "SERVER_PORT";
       }
