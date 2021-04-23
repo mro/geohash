@@ -83,20 +83,26 @@ let base32_encode chars x =
   chars |> Bytes.create |> f (chars - 1) x |> Bytes.to_string
 
 let base32_decode hash =
-  let len = String.length hash in
-  let rec f idx x =
-    match len - idx with
-    | 0 -> Ok x
-    | _ ->
-        Result.bind
-          (hash.[idx] |> Iter.P.b32_int_of_char)
-          (fun v -> v |> of_int |> logor (shift_left x 5) |> f (idx + 1))
-  in
-  f 0 zero
+  let len = hash |> String.length in
+  match len <= 12 with
+  | false -> Error '_'
+  | true ->
+      let rec f idx x =
+        match len - idx with
+        | 0 -> Ok x
+        | _ ->
+            Result.bind
+              (hash.[idx] |> Iter.P.b32_int_of_char)
+              (fun v -> v |> of_int |> logor (shift_left x 5) |> f (idx + 1))
+      in
+      f 0 zero
 
 let encode chars wgs84 =
-  let h60 = wgs84 |> quantize30 |> interleave in
-  Ok (shift_right h60 (60 - (5 * chars)) |> base32_encode chars)
+  match 0 <= chars && chars <= 12 with
+  | false -> Error chars
+  | true ->
+      let h60 = wgs84 |> quantize30 |> interleave in
+      Ok (shift_right h60 (60 - (5 * chars)) |> base32_encode chars)
 
 let error_with_precision bits =
   let latBits = bits / 2 in

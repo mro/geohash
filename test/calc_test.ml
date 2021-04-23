@@ -24,6 +24,15 @@ open Lib.Calc
 let assert_equals_int64 (test_name : string) (expected : t) (result : t) : 'a =
   Assert.assert_equals test_name to_string expected result
 
+let test_len () =
+  assert ("zzzzzzzzzzzZ" < "zzzzzzzzzzzz");
+  assert ("zzzzzzzzzzzz" < "zzzzzzzzzzzz ");
+  assert ("zzzzzzzzzzzz" < "zzzzzzzzzzzz1");
+  assert ("zzzzzzzzzzzz" > "u28brs0s00040");
+  assert ("z" > "aa");
+  assert ("a" < "b");
+  assert (12 < ("u28brs0s00040" |> String.length))
+
 (*
 
 let test_spread () =
@@ -129,14 +138,21 @@ let test_decode_sunshine () =
   t 20 "u28brs0s0004"
     ((47.879105, 12.634964), (8.38190317154e-08, 1.67638063431e-07))
 
+let test_decode_fail () =
+  assert ("u28brs0s00040" |> decode = Error '_');
+  assert ("u28brs0s00041" |> decode = Error '_');
+  assert ("_" |> decode = Error '_')
+
 let () =
+  test_len ();
   (* test_spread ();
               test_interleave ();
            test_deinterleave ();
         test_quantize ();
      test_base32_decode ();
      test_base32_encode ();
-     test_quantize ();
   *)
+  test_quantize ();
   test_encode_a ();
-  test_decode_sunshine ()
+  test_decode_sunshine ();
+  test_decode_fail ()

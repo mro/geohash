@@ -23,19 +23,6 @@ let globe = "🌐"
 open Lib
 open Lib.Cgi
 
-let handle_query_string qs =
-  let prec =
-    (* rough estimate: digits ~ length - q= and  3 separators
-     * bits = digits * ln(10)/ln(2)
-     * geohash has 5 bit per char, *)
-    float ((qs |> String.length) - 5) *. 3.3219 /. 5.
-    |> ceil |> truncate
-    (* but no less than 2 and no more than 12 *)
-    |> max 2
-    |> min 12
-  in
-  Result.bind (qs |> Route.coord_from_qs) (prec |> Lib.Calc.encode)
-
 let handle_hash req =
   match req.path_info |> String.split_on_char '/' with
   | [ ""; hash ] -> (
@@ -82,11 +69,25 @@ let handle req =
       | "/" -> (
           match req.query_string with
           | "" -> uri ^ mercator_birth |> redirect
-          | s -> (
-              match s |> handle_query_string with
-              | Ok hash -> hash |> redirect
-              | Error (`NoMatch (_, _)) ->
-                  error 406 "Cannot parse query string."
-              | Error _ -> error 406 "Cannot encode coords."))
+          | qs -> (
+              match qs |> Route.coord_from_qs with
+              | Error (`NoMatch (_, s')) ->
+                  error 406 ("Cannot encode coords: '" ^ s' ^ "'")
+              | Error (`ConverterFailure _) -> error 406 "Cannot encode coords."
+              | Ok co -> (
+                  (* actually logic :-( *)
+                  let prec =
+                    (* rough estimate: digits ~ length - q= and  3 separators
+                     * bits = digits * ln(10)/ln(2)
+                     * geohash has 5 bit per char, *)
+                    float ((qs |> String.length) - 5) *. 3.3219 /. 5.
+                    |> ceil |> truncate
+                    (* but no less than 2 and no more than 12 *)
+                    |> max 2
+                    |> min 12
+                  in
+                  match co |> Lib.Calc.encode prec with
+                  | Error _ -> error 406 "Cannot encode coords."
+                  | Ok hash -> hash |> redirect)))
       | _ -> handle_hash req)
   | _ -> error 405 "Method Not Allowed"
