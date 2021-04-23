@@ -18,11 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-open Int63
+open Optint.Int63
 open Lib.Calc
 
-let assert_equals_int64 (test_name : string) (expected : Int63.t)
-    (result : Int63.t) : 'a =
+let assert_equals_int64 (test_name : string) (expected : t) (result : t) : 'a =
   Assert.assert_equals test_name to_string expected result
 
 (*

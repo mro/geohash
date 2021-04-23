@@ -22,7 +22,14 @@
  * and https://github.com/mmcloughlin/geohash/blob/master/geohash.go 
  * and https://github.com/mmcloughlin/deconstructedgeohash/blob/master/geohash.go *)
 
-open Int63
+open Optint.Int63
+
+(*
+ * 60 bits are fine, because
+ * - ocaml has efficient int63 but not int64
+ * - 12 geohash characters equal 60 bit
+ * - nobody uses 13 chars = 65 bit
+ *)
 
 (* wgs84 -> 30 bit geohash *)
 let quantize30 (lat, lng) =
@@ -44,7 +51,7 @@ let x0f0f0f0f0f0f0f0f = of_int64 0x0f0f0f0f0f0f0f0fL
 
 let x3333333333333333 = of_int64 0x3333333333333333L
 
-let x5555555555555555 = of_int64 0x3555555555555555L
+let x5555555555555555 = of_int64 0x5555555555555555L
 
 let spread x =
   let f s m x' = m |> logand (x' |> logor (shift_left x' s)) in
