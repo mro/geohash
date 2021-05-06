@@ -26,7 +26,7 @@ open Lib.Cgi
 let handle_hash req =
   match req.path_info |> String.split_on_char '/' with
   | [ ""; hash ] -> (
-      match Lib.Calc.decode hash with
+      match Lib.Geohash.decode hash with
       | Error _ -> error 406 "Cannot decode hash."
       | Ok ((lat, lon), (dlat, dlon)) ->
           let mime = "text/xml"
@@ -86,7 +86,7 @@ let handle req =
                     |> max 2
                     |> min 12
                   in
-                  match co |> Lib.Calc.encode prec with
+                  match co |> Lib.Geohash.encode prec with
                   | Error _ -> error 406 "Cannot encode coords."
                   | Ok hash -> hash |> redirect)))
       | _ -> handle_hash req)

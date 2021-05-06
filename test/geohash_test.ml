@@ -1,5 +1,5 @@
 (*
- * math_test.ml
+ * geohash_test.ml
  *
  * Created by Marcus Rohrmoser on 11.03.21.
  * Copyright © 2021-2021 Marcus Rohrmoser mobile Software http://mro.name/~me. All rights reserved.
@@ -19,7 +19,7 @@
  *)
 
 open Optint.Int63
-open Lib.Calc
+open Lib.Geohash
 
 let assert_equals_int64 (test_name : string) (expected : t) (result : t) : 'a =
   Assert.assert_equals test_name to_string expected result

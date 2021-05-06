@@ -1,5 +1,5 @@
 (*
- * calc.ml
+ * geohash.ml
  *
  * Created by Marcus Rohrmoser on 11.03.21.
  * Copyright © 2021-2021 Marcus Rohrmoser mobile Software http://mro.name/~me. All rights reserved.
@@ -26,9 +26,9 @@ open Optint.Int63
 
 (*
  * 60 bits are fine, because
- * - ocaml has efficient int63 but not int64
- * - 12 geohash characters equal 60 bit
  * - nobody uses 13 chars = 65 bit
+ * - 12 geohash characters equal 60 bit
+ * - ocaml has efficient int63 but not int64
  *)
 
 (* wgs84 -> 30 bit geohash *)
@@ -68,16 +68,23 @@ let interleave (x, y) = spread x |> logor (shift_left (spread y) 1)
 
 let deinterleave x = (squash x, squash (shift_right x 1))
 
+let alphabet = Bytes.of_string "0123456789bcdefghjkmnpqrstuvwxyz"
+
+let b32_int_to_char i = Bytes.get alphabet i
+
+let b32_int_of_char c =
+  (* if we want it fast, either do binary search or construct a sparse LUT from chars 0-z -> int *)
+  match c |> Bytes.index_opt alphabet with None -> Error c | Some i -> Ok i
+
 let x1f = of_int 0x1f
 
 (* encode the chars * 5 low bits of x *)
 let base32_encode chars x =
-  let alpha = "0123456789bcdefghjkmnpqrstuvwxyz" in
   let rec f i x' b =
     match i with
     | -1 -> b
     | _ ->
-        Bytes.set b i alpha.[x' |> logand x1f |> to_int];
+        x' |> logand x1f |> to_int |> b32_int_to_char |> Bytes.set b i;
         f (i - 1) (shift_right x' 5) b
   in
   chars |> Bytes.create |> f (chars - 1) x |> Bytes.to_string
@@ -92,7 +99,7 @@ let base32_decode hash =
         | 0 -> Ok x
         | _ ->
             Result.bind
-              (hash.[idx] |> Iter.P.b32_int_of_char)
+              (hash.[idx] |> b32_int_of_char)
               (fun v -> v |> of_int |> logor (shift_left x 5) |> f (idx + 1))
       in
       f 0 zero

@@ -1,8 +1,7 @@
 ; http://cumulus.github.io/Syndic/syndic/Syndic__/Syndic_atom/
 (tests
  (names
-   iter_test
-   calc_test
+   geohash_test
    cgi_test
    route_test
  )
