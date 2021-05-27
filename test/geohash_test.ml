@@ -79,10 +79,10 @@ let test_base32_decode () =
     (* Printf.eprintf "decode %#x\n" x; *)
     x |> assert_equals_int64 (Printf.sprintf "test_base32_decode #%d" i) b
   in
-  t 10 "tuvz4p141zc1" (concat 0xceb7f25 0x4240fd61);
-  t 11 "ezs42" (concat 0 0xdfe082);
-  (* t 12 "u4pruydqqvj" (concat 0x6895be 0xbccb5b71); *)
-  t 13 "zzs000000000" (concat 0xfff0000 0x00000000)
+  t 10 "tuvz4p141zc1" (of_int64 0xceb7f254240fd61L);
+  t 11 "ezs42" (of_int64 0xdfe082L);
+  (* t 12 "u4pruydqqvj" (of_int64 0x6895bebccb5b71L); *)
+  t 13 "zzs000000000" (of_int64 0x0fff000000000000L)
 
 let test_base32_encode () =
   let t i p a b =
@@ -101,7 +101,7 @@ let test_quantize () =
     shift_right (wgs84 |> quantize30 |> interleave) 0
     |> assert_equals_int64 (Printf.sprintf "test_quantize #%d" i) b
   in
-  t 10 (27.988056, 86.925278) (concat 0xceb7f25 0x4240fd61)
+  t 10 (27.988056, 86.925278) (of_int64 0xceb7f254240fd61L)
 
 let test_encode_a () =
   let t i p a b =
@@ -146,12 +146,12 @@ let test_decode_fail () =
 let () =
   test_len ();
   (* test_spread ();
-              test_interleave ();
-           test_deinterleave ();
-        test_quantize ();
-     test_base32_decode ();
+     test_interleave ();
+     test_deinterleave ();
+     test_quantize ();
      test_base32_encode ();
   *)
+  test_base32_decode ();
   test_quantize ();
   test_encode_a ();
   test_decode_sunshine ();

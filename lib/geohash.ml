@@ -51,7 +51,7 @@ let x0f0f0f0f0f0f0f0f = of_int64 0x0f0f0f0f0f0f0f0fL
 
 let x3333333333333333 = of_int64 0x3333333333333333L
 
-let x5555555555555555 = of_int64 0x5555555555555555L
+let x5555555555555555 = of_int64 0x3555555555555555L
 
 let spread x =
   let f s m x' = m |> logand (x' |> logor (shift_left x' s)) in
