@@ -82,7 +82,8 @@ let test_base32_decode () =
   t 10 "tuvz4p141zc1" (of_int64 0xceb7f254240fd61L);
   t 11 "ezs42" (of_int64 0xdfe082L);
   (* t 12 "u4pruydqqvj" (of_int64 0x6895bebccb5b71L); *)
-  t 13 "zzs000000000" (of_int64 0x0fff000000000000L)
+  t 13 "zzs000000000" (of_int64 0x0fff000000000000L);
+  t 50 "zzzzzzzzzzzz" (of_int64 0x0FFFFFFFFFFFFFFFL)
 
 let test_base32_encode () =
   let t i p a b =
@@ -148,7 +149,6 @@ let () =
   (* test_spread ();
      test_interleave ();
      test_deinterleave ();
-     test_quantize ();
      test_base32_encode ();
   *)
   test_base32_decode ();
