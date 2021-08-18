@@ -23,19 +23,19 @@ let globe = "🌐"
 open Lib
 open Lib.Cgi
 
-let handle_hash req =
+let handle_hash oc req =
   match req.path_info |> String.split_on_char '/' with
   | [ ""; hash ] -> (
       match Lib.Geohash.decode hash with
-      | Error _ -> error 406 "Cannot decode hash."
+      | Error _ -> error oc 406 "Cannot decode hash."
       | Ok ((lat, lon), (dlat, dlon)) ->
           let mime = "text/xml"
           and xslt = "gpx2html.xslt"
           and uri = req |> request_uri
           and base = "http://purl.mro.name/geohash" in
-          Printf.printf "%s: %s\n" "Content-Type" mime;
-          Printf.printf "\n";
-          Printf.printf
+          Printf.fprintf oc "%s: %s\n" "Content-Type" mime;
+          Printf.fprintf oc "\n";
+          Printf.fprintf oc
             "<?xml version='1.0'?><!-- \
              https://www.topografix.com/GPX/1/1/gpx.xsd -->\n\
              <?xml-stylesheet type='text/xsl' href='%s'?>\n\
@@ -54,26 +54,27 @@ let handle_hash req =
             (lon -. dlon) (lat +. dlat) (lon +. dlon) lat lon hash req.scheme
             req.host req.server_port uri;
           0)
-  | _ -> error 404 "Not found"
+  | _ -> error oc 404 "Not found"
 
-let handle req =
+let handle oc req =
   let mercator_birth = "u154c" and uri = req |> request_uri in
   match req.request_method with
   | "GET" -> (
       match req.path_info with
-      | "/about" -> dump_clob "text/xml" Res.doap_rdf
-      | "/LICENSE" -> dump_clob "text/plain" Res._LICENSE
-      | "/doap2html.xslt" -> dump_clob "text/xml" Res.doap2html_xslt
-      | "/gpx2html.xslt" -> dump_clob "text/xml" Res.gpx2html_xslt
-      | "" -> uri ^ "/" |> redirect
+      | "/about" -> dump_clob oc "text/xml" Res.doap_rdf
+      | "/LICENSE" -> dump_clob oc "text/plain" Res._LICENSE
+      | "/doap2html.xslt" -> dump_clob oc "text/xml" Res.doap2html_xslt
+      | "/gpx2html.xslt" -> dump_clob oc "text/xml" Res.gpx2html_xslt
+      | "" -> uri ^ "/" |> redirect oc
       | "/" -> (
           match req.query_string with
-          | "" -> uri ^ mercator_birth |> redirect
+          | "" -> uri ^ mercator_birth |> redirect oc
           | qs -> (
               match qs |> Route.coord_from_qs with
               | Error (`NoMatch (_, s')) ->
-                  error 406 ("Cannot encode coords: '" ^ s' ^ "'")
-              | Error (`ConverterFailure _) -> error 406 "Cannot encode coords."
+                  error oc 406 ("Cannot encode coords: '" ^ s' ^ "'")
+              | Error (`ConverterFailure _) ->
+                  error oc 406 "Cannot encode coords."
               | Ok co -> (
                   (* actually logic :-( *)
                   let prec =
@@ -87,7 +88,7 @@ let handle req =
                     |> min 12
                   in
                   match co |> Lib.Geohash.encode prec with
-                  | Error _ -> error 406 "Cannot encode coords."
-                  | Ok hash -> hash |> redirect)))
-      | _ -> handle_hash req)
-  | _ -> error 405 "Method Not Allowed"
+                  | Error _ -> error oc 406 "Cannot encode coords."
+                  | Ok hash -> hash |> redirect oc)))
+      | _ -> handle_hash oc req)
+  | _ -> error oc 405 "Method Not Allowed"

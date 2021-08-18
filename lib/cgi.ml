@@ -32,29 +32,29 @@ module Os = struct
       | None -> failwith ("Cgi: the environment variable " ^ s ^ " is not set"))
 end
 
-let redirect url =
+let redirect oc url =
   let status = 302
   and reason = "Found"
   and mime = "text/plain; charset=utf-8" in
-  Printf.printf "%s: %d %s\n" "Status" status reason;
-  Printf.printf "%s: %s\n" "Content-Type" mime;
-  Printf.printf "%s: %s\n" "Location" url;
-  Printf.printf "\n";
-  Printf.printf "%s %s.\n" camel reason;
+  Printf.fprintf oc "%s: %d %s\n" "Status" status reason;
+  Printf.fprintf oc "%s: %s\n" "Content-Type" mime;
+  Printf.fprintf oc "%s: %s\n" "Location" url;
+  Printf.fprintf oc "\n";
+  Printf.fprintf oc "%s %s.\n" camel reason;
   0
 
-let error status reason =
+let error oc status reason =
   let mime = "text/plain; charset=utf-8" in
-  Printf.printf "%s: %d %s\n" "Status" status reason;
-  Printf.printf "%s: %s\n" "Content-Type" mime;
-  Printf.printf "\n";
-  Printf.printf "%s %s.\n" camel reason;
+  Printf.fprintf oc "%s: %d %s\n" "Status" status reason;
+  Printf.fprintf oc "%s: %s\n" "Content-Type" mime;
+  Printf.fprintf oc "\n";
+  Printf.fprintf oc "%s %s.\n" camel reason;
   0
 
-let dump_clob mime clob =
-  Printf.printf "%s: %s\n" "Content-Type" mime;
-  Printf.printf "\n";
-  Printf.printf "%s" clob;
+let dump_clob oc mime clob =
+  Printf.fprintf oc "%s: %s\n" "Content-Type" mime;
+  Printf.fprintf oc "\n";
+  Printf.fprintf oc "%s" clob;
   0
 
 type req_raw = {

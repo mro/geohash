@@ -27,21 +27,21 @@ let err i msgs =
 
 let to_hash h = Ok [ h; "not implemented yet." ]
 
-let print_version () =
+let print_version oc =
   let exe = Filename.basename Sys.executable_name in
-  Printf.printf "%s: https://mro.name/%s/v%s, built: %s\n" exe "geohash"
+  Printf.fprintf oc "%s: https://mro.name/%s/v%s, built: %s\n" exe "geohash"
     Version.git_sha Version.date;
   0
 
-let print_help () =
+let print_help oc =
   let exe = Filename.basename Sys.executable_name in
-  Printf.printf
+  Printf.fprintf oc
     "\n\
      Convert one lat,lon pair or geohash to gpx with bbox and geohash comment.\n\n\
      Works as a webserver CGI or commandline converter.\n\n\
      If run from commandline:\n\n\
      SYNOPSIS\n\n\
-    \  $ %s -v\n\n\
+    \  $ %s -V\n\n\
     \  $ %s -h\n\n\
     \  $ %s --doap\n\n\
     \  $ %s 'geo:47.67726,12.47077?z=19'\n\n"
@@ -49,15 +49,16 @@ let print_help () =
   0
 
 let exec args =
+  let oc = stdout in
   match args |> List.tl with
-  | [ "-h" ] | [ "--help" ] -> print_help ()
-  | [ "-v" ] | [ "--version" ] -> print_version ()
+  | [ "-h" ] | [ "--help" ] -> print_help oc
+  | [ "-V" ] | [ "--version" ] -> print_version oc
   | [ "--doap" ] ->
-      Printf.printf "%s" Lib.Res.doap_rdf;
+      Printf.fprintf oc "%s" Lib.Res.doap_rdf;
       0
   | [ i ] ->
       (i |> to_hash |> function
-       | Ok h -> h |> String.concat " -> " |> Printf.printf "%s"
-       | Error _ -> "ouch" |> Printf.printf "%s");
+       | Ok h -> h |> String.concat " -> " |> Printf.fprintf oc "%s"
+       | Error _ -> "ouch" |> Printf.fprintf oc "%s");
       0
   | _ -> err 2 [ "get help with -h" ]

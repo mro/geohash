@@ -20,6 +20,6 @@
 
 let () =
   (match Lib.Cgi.request_from_env () |> Lib.Cgi.consolidate with
-  | Ok req -> Cgi.handle req
+  | Ok req -> Cgi.handle stdout req
   | Error _ -> Sys.argv |> Array.to_list |> Shell.exec)
   |> exit
